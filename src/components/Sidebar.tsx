@@ -17,18 +17,10 @@ import {
 
 const menuItems = [
   { href: '/', label: 'Generador', icon: Palette },
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/automatizaciones', label: 'Automatizaciones', icon: Bot },
-  { href: '/multi-design', label: 'Multi-Diseño', icon: Layers },
-  { href: '/promociones', label: 'Promociones', icon: Tag },
+  { href: '/automatizaciones', label: 'Batch', icon: Layers },
 ];
 
 const externalLinks = [
-  {
-    href: 'https://www.printful.com/dashboard',
-    label: 'Printful Dashboard',
-    icon: Store,
-  },
   {
     href: 'https://dashboard.gelato.com',
     label: 'Gelato Dashboard',
