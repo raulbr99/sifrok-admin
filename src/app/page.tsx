@@ -15,12 +15,26 @@ export default function DesignGeneratorPage() {
   const [enhanceInstructions, setEnhanceInstructions] = useState<string>('');
   const [editPrompt, setEditPrompt] = useState<string>('');
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
+  const [imageModel, setImageModel] = useState<string>('google/gemini-2.0-flash-exp:free');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/auth/login');
     }
   }, [status, router]);
+
+  // Load pending prompt from ideas page and settings
+  useEffect(() => {
+    const pendingPrompt = localStorage.getItem('pending-prompt');
+    if (pendingPrompt) {
+      setAiPrompt(pendingPrompt);
+      localStorage.removeItem('pending-prompt');
+    }
+    const savedModel = localStorage.getItem('openrouter-image-model');
+    if (savedModel) {
+      setImageModel(savedModel);
+    }
+  }, []);
 
   const handleEnhancePrompt = async () => {
     if (!aiPrompt.trim()) {
@@ -68,7 +82,8 @@ export default function DesignGeneratorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: aiPrompt,
-          image: generatedImage || undefined
+          image: generatedImage || undefined,
+          model: imageModel,
         }),
       });
 
@@ -101,7 +116,8 @@ export default function DesignGeneratorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: editPrompt,
-          image: generatedImage
+          image: generatedImage,
+          model: imageModel,
         }),
       });
 

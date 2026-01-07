@@ -17,7 +17,9 @@ import {
 
 const menuItems = [
   { href: '/', label: 'Generador', icon: Palette },
+  { href: '/ideas', label: 'Ideas', icon: Bot },
   { href: '/automatizaciones', label: 'Batch', icon: Layers },
+  { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 const externalLinks = [
