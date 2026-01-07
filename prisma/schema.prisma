@@ -1,0 +1,278 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  role          String    @default("user")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastActiveAt  DateTime? // Última actividad para reactivación
+
+  accounts  Account[]
+  sessions  Session[]
+  orders    Order[]
+  wishlist  WishlistItem[]
+  reviews   Review[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CheckoutSession {
+  id                    String   @id @default(cuid())
+  sessionId             String   @unique
+  userId                String
+  items                 String   @db.Text
+  expiresAt             DateTime
+  createdAt             DateTime @default(now())
+  abandonedEmailSentAt  DateTime? // Fecha en que se envió email de carrito abandonado
+  reminderCount         Int      @default(0) // Número de recordatorios enviados
+}
+
+model EmailLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  email     String
+  type      EmailType
+  subject   String
+  sentAt    DateTime @default(now())
+  metadata  String?  @db.Text // JSON con datos adicionales
+}
+
+enum EmailType {
+  ORDER_CONFIRMATION
+  SHIPPING_NOTIFICATION
+  ABANDONED_CART
+  REACTIVATION
+  DAILY_REPORT
+  WELCOME
+  PROMOTIONAL
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  stripeSessionId   String      @unique
+  stripePaymentId   String?
+  total             Float
+  currency          String      @default("eur")
+  status            OrderStatus @default(PENDING)
+  shippingName      String?
+  shippingEmail     String?
+  shippingAddress   String?
+  shippingCity      String?
+  shippingZipCode   String?
+  shippingCountry   String?
+  printfulOrderId   String?     @unique
+  printfulStatus    String?
+  trackingNumber    String?
+  trackingUrl       String?
+  carrier           String?
+  shippedAt         DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+}
+
+model OrderItem {
+  id          String  @id @default(cuid())
+  orderId     String
+  productId   String
+  productName String
+  variantId   String?
+  variantName String?
+  quantity    Int
+  price       Float
+  image       String?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  FAILED
+}
+
+model Promotion {
+  id            String          @id @default(cuid())
+  name          String          // Nombre de la promoción (ej: "Black Friday")
+  code          String?         @unique // Código opcional (ej: "VERANO20")
+  type          PromotionType   // PERCENTAGE o FIXED_AMOUNT
+  value         Float           // 20 (para 20%) o 5.00 (para €5)
+  isActive      Boolean         @default(true)
+  startDate     DateTime?       // Fecha de inicio (opcional)
+  endDate       DateTime?       // Fecha de fin (opcional)
+  minAmount     Float?          // Monto mínimo de compra
+  maxUses       Int?            // Máximo de usos totales
+  currentUses   Int             @default(0)
+  applyTo       ApplyTo         @default(ALL) // ALL, CATEGORY, PRODUCT
+  categoryFilter String?        // Si applyTo = CATEGORY
+  productFilter  String?        // Si applyTo = PRODUCT (ID del producto)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+enum PromotionType {
+  PERCENTAGE    // Descuento porcentual (ej: 20%)
+  FIXED_AMOUNT  // Descuento fijo (ej: €5)
+}
+
+enum ApplyTo {
+  ALL       // Aplica a todos los productos
+  CATEGORY  // Aplica a una categoría específica
+  PRODUCT   // Aplica a un producto específico
+}
+
+model WishlistItem {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  productName String
+  productImage String?
+  productPrice Float
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model Review {
+  id          String   @id @default(cuid())
+  userId      String
+  productId   String
+  productName String
+  rating      Int      // 1-5
+  title       String?
+  comment     String?  @db.Text
+  isVerified  Boolean  @default(false) // Si compró el producto
+  isApproved  Boolean  @default(true)  // Moderación
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([productId])
+}
+
+model GiftCard {
+  id            String        @id @default(cuid())
+  code          String        @unique
+  initialAmount Float
+  balance       Float
+  currency      String        @default("EUR")
+  status        GiftCardStatus @default(ACTIVE)
+  purchasedBy   String?       // userId del comprador
+  recipientEmail String?      // Email del destinatario
+  recipientName  String?
+  message       String?       @db.Text
+  expiresAt     DateTime?
+  usedAt        DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([code])
+}
+
+enum GiftCardStatus {
+  ACTIVE
+  USED
+  EXPIRED
+  CANCELLED
+}
+
+model SupportTicket {
+  id          String         @id @default(cuid())
+  ticketNumber String        @unique
+  userId      String?
+  email       String
+  name        String
+  subject     String
+  status      TicketStatus   @default(OPEN)
+  priority    TicketPriority @default(MEDIUM)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  closedAt    DateTime?
+
+  messages    SupportMessage[]
+}
+
+model SupportMessage {
+  id          String   @id @default(cuid())
+  ticketId    String
+  content     String   @db.Text
+  isFromUser  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_RESPONSE
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
