@@ -156,7 +156,18 @@ export default function DesignStudioPage() {
   // Collection name
   const [collectionName, setCollectionName] = useState('');
 
+  // Model from settings
+  const [imageModel, setImageModel] = useState('google/gemini-2.0-flash-exp:free');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Load image model from settings
+  useEffect(() => {
+    const savedImageModel = localStorage.getItem('openrouter-image-model');
+    if (savedImageModel) {
+      setImageModel(savedImageModel);
+    }
+  }, []);
 
   const currentGarment = GARMENT_TYPES.find(g => g.id === garmentType);
   const currentGarmentColor = GARMENT_COLORS.find(c => c.id === garmentColor);
@@ -270,7 +281,7 @@ Style: cohesive, professional, suitable for print, isolated graphic element with
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             prompt: placementPrompt,
-            model: 'google/gemini-2.0-flash-exp:free',
+            model: imageModel,
           }),
         });
 
@@ -333,7 +344,7 @@ Style: cohesive, professional, suitable for print.`;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           prompt: placementPrompt,
-          model: 'google/gemini-2.0-flash-exp:free',
+          model: imageModel,
         }),
       });
 
