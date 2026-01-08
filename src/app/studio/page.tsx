@@ -105,16 +105,6 @@ const PLACEMENTS: Record<string, { name: string; x: number; y: number; maxWidth:
   'back-center': { name: 'Trasero Centro', x: 50, y: 50, maxWidth: 70, sizeHint: 'medium centered design' },
 };
 
-const GARMENT_COLORS = [
-  { id: 'white', name: 'Blanco', hex: '#FFFFFF', textColor: 'dark' },
-  { id: 'black', name: 'Negro', hex: '#1a1a1a', textColor: 'light' },
-  { id: 'navy', name: 'Azul Marino', hex: '#1e3a5f', textColor: 'light' },
-  { id: 'gray', name: 'Gris', hex: '#6b7280', textColor: 'light' },
-  { id: 'forest', name: 'Verde Bosque', hex: '#166534', textColor: 'light' },
-  { id: 'burgundy', name: 'Borgoña', hex: '#800020', textColor: 'light' },
-  { id: 'sand', name: 'Arena', hex: '#d4c4a8', textColor: 'dark' },
-  { id: 'cream', name: 'Crema', hex: '#fffdd0', textColor: 'dark' },
-];
 
 interface PlacementDesign {
   placement: string;
@@ -135,7 +125,6 @@ interface ExtractedColor {
 export default function DesignStudioPage() {
   // Core state
   const [garmentType, setGarmentType] = useState('tshirt');
-  const [garmentColor, setGarmentColor] = useState('white');
   const [designPrompt, setDesignPrompt] = useState('');
 
   // Generation state
@@ -150,8 +139,8 @@ export default function DesignStudioPage() {
   // Extracted colors from designs
   const [extractedColors, setExtractedColors] = useState<ExtractedColor[]>([]);
 
-  // Background removal
-  const [isRemovingBackground, setIsRemovingBackground] = useState(false);
+  // Background removal - tracks which placement is being processed
+  const [removingBgFor, setRemovingBgFor] = useState<string | null>(null);
 
   // Collection name
   const [collectionName, setCollectionName] = useState('');
@@ -170,7 +159,6 @@ export default function DesignStudioPage() {
   }, []);
 
   const currentGarment = GARMENT_TYPES.find(g => g.id === garmentType);
-  const currentGarmentColor = GARMENT_COLORS.find(c => c.id === garmentColor);
   const selectedDesign = placementDesigns.find(pd => pd.placement === selectedPlacement);
 
   // Initialize placement designs when garment type changes
@@ -373,24 +361,25 @@ Style: cohesive, professional, suitable for print.`;
     }
   };
 
-  // Remove background from selected design
-  const handleRemoveBackground = async () => {
-    if (!selectedDesign?.imageUrl) return;
+  // Remove background from a specific placement
+  const handleRemoveBackground = async (placementId: string) => {
+    const design = placementDesigns.find(pd => pd.placement === placementId);
+    if (!design?.imageUrl) return;
 
-    setIsRemovingBackground(true);
+    setRemovingBgFor(placementId);
 
     try {
       const response = await fetch('/api/admin/remove-background', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageUrl: selectedDesign.imageUrl }),
+        body: JSON.stringify({ imageUrl: design.imageUrl }),
       });
 
       const data = await response.json();
 
       if (response.ok && data.imageUrl) {
         setPlacementDesigns(prev => prev.map(pd =>
-          pd.placement === selectedPlacement
+          pd.placement === placementId
             ? { ...pd, imageUrl: data.imageUrl }
             : pd
         ));
@@ -398,7 +387,7 @@ Style: cohesive, professional, suitable for print.`;
     } catch (error) {
       console.error('Error removing background:', error);
     } finally {
-      setIsRemovingBackground(false);
+      setRemovingBgFor(null);
     }
   };
 
@@ -537,6 +526,7 @@ Style: cohesive, professional, suitable for print.`;
               <div className="grid grid-cols-2 gap-3">
                 {placementDesigns.map((pd) => {
                   const config = PLACEMENTS[pd.placement];
+                  const isRemovingBg = removingBgFor === pd.placement;
                   return (
                     <div
                       key={pd.placement}
@@ -547,9 +537,10 @@ Style: cohesive, professional, suitable for print.`;
                           : 'border-gray-200 hover:border-purple-400'
                       }`}
                     >
-                      {pd.isGenerating ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                      {pd.isGenerating || isRemovingBg ? (
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
                           <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                          {isRemovingBg && <span className="text-xs text-gray-500 mt-1">Quitando fondo...</span>}
                         </div>
                       ) : pd.imageUrl ? (
                         <img
@@ -565,10 +556,22 @@ Style: cohesive, professional, suitable for print.`;
                       <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs text-center py-1 font-medium">
                         {config?.name}
                       </div>
-                      {pd.imageUrl && (
-                        <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
-                          <Check className="w-3 h-3" />
-                        </div>
+                      {pd.imageUrl && !isRemovingBg && (
+                        <>
+                          <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
+                            <Check className="w-3 h-3" />
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveBackground(pd.placement);
+                            }}
+                            className="absolute top-1 left-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-1 transition-colors"
+                            title="Quitar fondo"
+                          >
+                            <Eraser className="w-3 h-3" />
+                          </button>
+                        </>
                       )}
                     </div>
                   );
@@ -616,11 +619,7 @@ Style: cohesive, professional, suitable for print.`;
 
               {/* Mockup Preview */}
               <div
-                className="relative mx-auto rounded-lg overflow-hidden aspect-[3/4]"
-                style={{
-                  backgroundColor: currentGarmentColor?.hex,
-                  transition: 'background-color 0.3s',
-                }}
+                className="relative mx-auto rounded-lg overflow-hidden aspect-[3/4] bg-gray-200"
               >
                 {/* Design */}
                 {selectedDesign?.imageUrl && (
@@ -654,25 +653,6 @@ Style: cohesive, professional, suitable for print.`;
                 )}
               </div>
 
-              {/* Garment Color Selector */}
-              <div className="mt-4">
-                <label className="text-xs text-gray-500 block mb-2">Color de Prenda</label>
-                <div className="flex flex-wrap gap-2">
-                  {GARMENT_COLORS.map((color) => (
-                    <button
-                      key={color.id}
-                      onClick={() => setGarmentColor(color.id)}
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        garmentColor === color.id
-                          ? 'border-purple-600 scale-110'
-                          : 'border-gray-300'
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                      title={color.name}
-                    />
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
 
@@ -715,11 +695,11 @@ Style: cohesive, professional, suitable for print.`;
                   </button>
 
                   <button
-                    onClick={handleRemoveBackground}
-                    disabled={!selectedDesign?.imageUrl || isRemovingBackground}
+                    onClick={() => selectedPlacement && handleRemoveBackground(selectedPlacement)}
+                    disabled={!selectedDesign?.imageUrl || removingBgFor === selectedPlacement}
                     className="w-full p-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                   >
-                    {isRemovingBackground ? (
+                    {removingBgFor === selectedPlacement ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
                       <Eraser className="w-4 h-4" />
