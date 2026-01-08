@@ -4,20 +4,23 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
-  LayoutDashboard,
   Palette,
   Sparkles,
   Layers,
-  Tag,
   LogOut,
   Store,
   Settings,
   Bot,
+  Shirt,
+  FolderOpen,
+  Lightbulb,
 } from 'lucide-react';
 
 const menuItems = [
-  { href: '/', label: 'Generador', icon: Palette },
-  { href: '/ideas', label: 'Ideas', icon: Bot },
+  { href: '/', label: 'Generador', icon: Sparkles },
+  { href: '/ideas', label: 'Ideas', icon: Lightbulb },
+  { href: '/studio', label: 'Design Studio', icon: Shirt },
+  { href: '/collections', label: 'Colecciones', icon: FolderOpen },
   { href: '/automatizaciones', label: 'Batch', icon: Layers },
   { href: '/settings', label: 'Configuración', icon: Settings },
 ];

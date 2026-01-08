@@ -91,7 +91,10 @@ export default function DesignGeneratorPage() {
 
       if (response.ok) {
         setGeneratedImage(data.imageUrl);
-        setGeneratedImages(prev => [data.imageUrl, ...prev].slice(0, 20));
+        const updatedImages = [data.imageUrl, ...generatedImages].slice(0, 20);
+        setGeneratedImages(updatedImages);
+        // Save to localStorage for Studio access
+        localStorage.setItem('generated-images', JSON.stringify(updatedImages));
       } else {
         alert(`Error: ${data.error}`);
       }
