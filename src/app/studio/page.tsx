@@ -20,40 +20,150 @@ import {
   Plus,
   X,
   Check,
+  Loader2,
+  Wand2,
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Garment types with their placement areas
+// Garment types with their placement areas - EXPANDED
 const GARMENT_TYPES = [
   {
     id: 'tshirt',
     name: 'Camiseta',
-    placements: ['front-center', 'front-left', 'back-full', 'back-neck'],
+    icon: '👕',
+    placements: ['front-center', 'front-left', 'front-right', 'back-full', 'back-neck', 'back-lower'],
   },
   {
     id: 'hoodie',
     name: 'Sudadera',
-    placements: ['front-center', 'front-left', 'back-full', 'sleeve-left', 'sleeve-right'],
+    icon: '🧥',
+    placements: ['front-center', 'front-left', 'front-right', 'back-full', 'back-neck', 'sleeve-left', 'sleeve-right', 'hood'],
   },
   {
     id: 'tanktop',
     name: 'Tank Top',
-    placements: ['front-center', 'back-full'],
+    icon: '🎽',
+    placements: ['front-center', 'front-left', 'back-full'],
   },
   {
     id: 'longsleeve',
     name: 'Manga Larga',
-    placements: ['front-center', 'front-left', 'back-full', 'sleeve-left', 'sleeve-right'],
+    icon: '👔',
+    placements: ['front-center', 'front-left', 'front-right', 'back-full', 'back-neck', 'sleeve-left', 'sleeve-right'],
+  },
+  {
+    id: 'sweatshirt',
+    name: 'Sudadera Sin Capucha',
+    icon: '🧷',
+    placements: ['front-center', 'front-left', 'front-right', 'back-full', 'back-neck', 'sleeve-left', 'sleeve-right'],
+  },
+  {
+    id: 'polo',
+    name: 'Polo',
+    icon: '👚',
+    placements: ['front-center', 'front-left', 'back-full', 'back-neck'],
+  },
+  {
+    id: 'jacket',
+    name: 'Chaqueta',
+    icon: '🧥',
+    placements: ['front-center', 'front-left', 'front-right', 'back-full', 'sleeve-left', 'sleeve-right'],
+  },
+  {
+    id: 'pants',
+    name: 'Pantalón',
+    icon: '👖',
+    placements: ['front-left-leg', 'front-right-leg', 'back-pocket'],
+  },
+  {
+    id: 'shorts',
+    name: 'Shorts',
+    icon: '🩳',
+    placements: ['front-left-leg', 'front-right-leg', 'back-pocket'],
+  },
+  {
+    id: 'cap',
+    name: 'Gorra',
+    icon: '🧢',
+    placements: ['front-center', 'side-left', 'side-right', 'back-strap'],
+  },
+  {
+    id: 'beanie',
+    name: 'Gorro',
+    icon: '🎿',
+    placements: ['front-center', 'fold-up'],
+  },
+  {
+    id: 'tote',
+    name: 'Tote Bag',
+    icon: '👜',
+    placements: ['front-center', 'back-center'],
+  },
+  {
+    id: 'backpack',
+    name: 'Mochila',
+    icon: '🎒',
+    placements: ['front-pocket', 'back-panel', 'side-pocket'],
+  },
+  {
+    id: 'mug',
+    name: 'Taza',
+    icon: '☕',
+    placements: ['wrap-around', 'front-center', 'back-center'],
+  },
+  {
+    id: 'phone-case',
+    name: 'Funda Móvil',
+    icon: '📱',
+    placements: ['full-back'],
+  },
+  {
+    id: 'poster',
+    name: 'Póster',
+    icon: '🖼️',
+    placements: ['full-print'],
+  },
+  {
+    id: 'sticker',
+    name: 'Sticker',
+    icon: '🏷️',
+    placements: ['full-print'],
   },
 ];
 
+// Extended placements configuration
 const PLACEMENTS = {
+  // Front placements
   'front-center': { name: 'Frontal Centro', x: 50, y: 40, maxWidth: 80 },
   'front-left': { name: 'Pecho Izquierdo', x: 30, y: 25, maxWidth: 25 },
+  'front-right': { name: 'Pecho Derecho', x: 70, y: 25, maxWidth: 25 },
+  // Back placements
   'back-full': { name: 'Espalda Completa', x: 50, y: 45, maxWidth: 85 },
   'back-neck': { name: 'Nuca', x: 50, y: 15, maxWidth: 20 },
+  'back-lower': { name: 'Espalda Baja', x: 50, y: 75, maxWidth: 30 },
+  'back-pocket': { name: 'Bolsillo Trasero', x: 50, y: 20, maxWidth: 15 },
+  // Sleeve placements
   'sleeve-left': { name: 'Manga Izquierda', x: 15, y: 35, maxWidth: 15 },
   'sleeve-right': { name: 'Manga Derecha', x: 85, y: 35, maxWidth: 15 },
+  // Hoodie specific
+  'hood': { name: 'Capucha', x: 50, y: 10, maxWidth: 30 },
+  // Pants/Shorts
+  'front-left-leg': { name: 'Pierna Izquierda', x: 35, y: 30, maxWidth: 20 },
+  'front-right-leg': { name: 'Pierna Derecha', x: 65, y: 30, maxWidth: 20 },
+  // Caps/Hats
+  'side-left': { name: 'Lado Izquierdo', x: 20, y: 50, maxWidth: 25 },
+  'side-right': { name: 'Lado Derecho', x: 80, y: 50, maxWidth: 25 },
+  'back-strap': { name: 'Correa Trasera', x: 50, y: 80, maxWidth: 20 },
+  'fold-up': { name: 'Doblez', x: 50, y: 70, maxWidth: 60 },
+  // Bags
+  'front-pocket': { name: 'Bolsillo Frontal', x: 50, y: 60, maxWidth: 40 },
+  'back-panel': { name: 'Panel Trasero', x: 50, y: 50, maxWidth: 70 },
+  'side-pocket': { name: 'Bolsillo Lateral', x: 85, y: 50, maxWidth: 15 },
+  'back-center': { name: 'Trasero Centro', x: 50, y: 50, maxWidth: 70 },
+  // Full prints
+  'wrap-around': { name: 'Envolvente', x: 50, y: 50, maxWidth: 100 },
+  'full-back': { name: 'Trasera Completa', x: 50, y: 50, maxWidth: 95 },
+  'full-print': { name: 'Impresión Completa', x: 50, y: 50, maxWidth: 100 },
 };
 
 const GARMENT_COLORS = [
@@ -67,6 +177,16 @@ const GARMENT_COLORS = [
   { id: 'sand', name: 'Arena', hex: '#d4c4a8', textColor: 'dark' },
   { id: 'pink', name: 'Rosa', hex: '#ec4899', textColor: 'light' },
   { id: 'skyblue', name: 'Celeste', hex: '#38bdf8', textColor: 'dark' },
+  { id: 'olive', name: 'Oliva', hex: '#556b2f', textColor: 'light' },
+  { id: 'burgundy', name: 'Borgoña', hex: '#800020', textColor: 'light' },
+  { id: 'teal', name: 'Verde Azulado', hex: '#008080', textColor: 'light' },
+  { id: 'coral', name: 'Coral', hex: '#ff7f50', textColor: 'dark' },
+  { id: 'lavender', name: 'Lavanda', hex: '#e6e6fa', textColor: 'dark' },
+  { id: 'mint', name: 'Menta', hex: '#98ff98', textColor: 'dark' },
+  { id: 'charcoal', name: 'Carbón', hex: '#36454f', textColor: 'light' },
+  { id: 'cream', name: 'Crema', hex: '#fffdd0', textColor: 'dark' },
+  { id: 'mustard', name: 'Mostaza', hex: '#ffdb58', textColor: 'dark' },
+  { id: 'dusty-rose', name: 'Rosa Palo', hex: '#dcae96', textColor: 'dark' },
 ];
 
 const DESIGN_SIZES = [
@@ -122,7 +242,27 @@ export default function DesignStudioPage() {
   // Saved designs
   const [savedDesigns, setSavedDesigns] = useState<DesignState[]>([]);
 
+  // OpenRouter AI Generation state
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [showGenerator, setShowGenerator] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
+
+  // Garment type filter state
+  const [garmentCategory, setGarmentCategory] = useState<'all' | 'clothing' | 'accessories' | 'home'>('all');
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Filter garments by category
+  const GARMENT_CATEGORIES = {
+    clothing: ['tshirt', 'hoodie', 'tanktop', 'longsleeve', 'sweatshirt', 'polo', 'jacket', 'pants', 'shorts'],
+    accessories: ['cap', 'beanie', 'tote', 'backpack', 'phone-case'],
+    home: ['mug', 'poster', 'sticker'],
+  };
+
+  const filteredGarmentTypes = garmentCategory === 'all'
+    ? GARMENT_TYPES
+    : GARMENT_TYPES.filter(g => GARMENT_CATEGORIES[garmentCategory]?.includes(g.id));
 
   // Load saved data from localStorage
   useEffect(() => {
@@ -157,6 +297,51 @@ export default function DesignStudioPage() {
       if (images.length > 0) {
         setDesignImage(images[0]);
       }
+    }
+  };
+
+  // Generate design with OpenRouter AI
+  const handleGenerateWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      setGenerationError('Por favor escribe una descripción del diseño');
+      return;
+    }
+
+    setIsGenerating(true);
+    setGenerationError(null);
+
+    try {
+      const response = await fetch('/api/admin/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          model: 'google/gemini-2.0-flash-exp:free',
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.imageUrl) {
+        setDesignImage(data.imageUrl);
+        setShowGenerator(false);
+        setAiPrompt('');
+
+        // Save to history
+        const history = localStorage.getItem('generated-images');
+        const images = history ? JSON.parse(history) : [];
+        images.unshift(data.imageUrl);
+        localStorage.setItem('generated-images', JSON.stringify(images.slice(0, 20)));
+      } else {
+        setGenerationError(data.error || 'Error al generar el diseño');
+      }
+    } catch (error) {
+      console.error('Error generating design:', error);
+      setGenerationError('Error de conexión al generar el diseño');
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -282,22 +467,73 @@ export default function DesignStudioPage() {
                 className="hidden"
               />
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors"
                 >
                   <Upload className="w-5 h-5" />
-                  <span className="text-sm">Subir</span>
+                  <span className="text-xs">Subir</span>
                 </button>
                 <button
                   onClick={handleLoadFromGenerator}
                   className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-pink-500 hover:bg-pink-50 transition-colors"
                 >
                   <Sparkles className="w-5 h-5" />
-                  <span className="text-sm">Generador</span>
+                  <span className="text-xs">Historial</span>
+                </button>
+                <button
+                  onClick={() => setShowGenerator(!showGenerator)}
+                  className={`flex items-center justify-center gap-2 p-3 border-2 border-dashed rounded-lg transition-colors ${
+                    showGenerator
+                      ? 'border-green-500 bg-green-50 text-green-700'
+                      : 'border-gray-300 hover:border-green-500 hover:bg-green-50'
+                  }`}
+                >
+                  <Wand2 className="w-5 h-5" />
+                  <span className="text-xs">IA</span>
                 </button>
               </div>
+
+              {/* AI Generator Panel */}
+              {showGenerator && (
+                <div className="mt-3 p-3 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg">
+                  <h4 className="font-bold text-green-800 mb-2 flex items-center gap-2 text-sm">
+                    <Wand2 className="w-4 h-4" />
+                    Generar con OpenRouter AI
+                  </h4>
+                  <textarea
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder="Describe tu diseño... Ej: Un león geométrico minimalista en estilo line art"
+                    className="w-full p-2 border border-green-300 rounded-lg text-sm resize-none h-20 focus:outline-none focus:border-green-500 bg-white text-gray-900"
+                    disabled={isGenerating}
+                  />
+                  {generationError && (
+                    <p className="text-red-500 text-xs mt-1">{generationError}</p>
+                  )}
+                  <button
+                    onClick={handleGenerateWithAI}
+                    disabled={isGenerating || !aiPrompt.trim()}
+                    className="w-full mt-2 p-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-bold text-sm hover:from-green-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Generando...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4" />
+                        Generar Diseño
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-green-700 mt-2 text-center">
+                    Powered by OpenRouter + Gemini
+                  </p>
+                </div>
+              )}
 
               {designImage && (
                 <div className="mt-3 relative">
@@ -320,10 +556,33 @@ export default function DesignStudioPage() {
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                 <Shirt className="w-5 h-5 text-purple-600" />
-                Tipo de Prenda
+                Tipo de Producto
               </h3>
-              <div className="grid grid-cols-2 gap-2">
-                {GARMENT_TYPES.map((garment) => (
+
+              {/* Category Filter */}
+              <div className="flex gap-1 mb-3 p-1 bg-gray-100 rounded-lg">
+                {[
+                  { id: 'all', label: 'Todos' },
+                  { id: 'clothing', label: 'Ropa' },
+                  { id: 'accessories', label: 'Accesorios' },
+                  { id: 'home', label: 'Hogar' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setGarmentCategory(cat.id as typeof garmentCategory)}
+                    className={`flex-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+                      garmentCategory === cat.id
+                        ? 'bg-white text-purple-600 shadow-sm'
+                        : 'text-gray-600 hover:text-purple-600'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+                {filteredGarmentTypes.map((garment) => (
                   <button
                     key={garment.id}
                     onClick={() => {
@@ -332,16 +591,20 @@ export default function DesignStudioPage() {
                         setPlacement(garment.placements[0]);
                       }
                     }}
-                    className={`p-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`p-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 ${
                       garmentType === garment.id
                         ? 'bg-purple-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-purple-100'
                     }`}
                   >
-                    {garment.name}
+                    <span>{garment.icon}</span>
+                    <span className="truncate">{garment.name}</span>
                   </button>
                 ))}
               </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                {filteredGarmentTypes.length} productos disponibles
+              </p>
             </div>
 
             {/* Placement */}
