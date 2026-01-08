@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Upload,
   Move,
@@ -22,6 +22,11 @@ import {
   Check,
   Loader2,
   Wand2,
+  Eraser,
+  Image as ImageIcon,
+  Grid3X3,
+  Pipette,
+  Package,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -212,6 +217,18 @@ interface CollectionColor {
   name: string;
 }
 
+interface PlacementDesign {
+  placement: string;
+  imageUrl: string;
+  isGenerating: boolean;
+}
+
+interface ExtractedColor {
+  hex: string;
+  name: string;
+  percentage: number;
+}
+
 export default function DesignStudioPage() {
   // Design state
   const [designImage, setDesignImage] = useState<string>('');
@@ -248,10 +265,23 @@ export default function DesignStudioPage() {
   const [showGenerator, setShowGenerator] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
 
+  // Background removal state
+  const [isRemovingBackground, setIsRemovingBackground] = useState(false);
+
+  // Multi-placement generation state
+  const [placementDesigns, setPlacementDesigns] = useState<PlacementDesign[]>([]);
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
+  const [showMultiGenerator, setShowMultiGenerator] = useState(false);
+
+  // Extracted colors from design
+  const [extractedColors, setExtractedColors] = useState<ExtractedColor[]>([]);
+  const [isExtractingColors, setIsExtractingColors] = useState(false);
+
   // Garment type filter state
   const [garmentCategory, setGarmentCategory] = useState<'all' | 'clothing' | 'accessories' | 'home'>('all');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Filter garments by category
   const GARMENT_CATEGORIES = {
@@ -300,7 +330,7 @@ export default function DesignStudioPage() {
     }
   };
 
-  // Generate design with OpenRouter AI
+  // Generate design with OpenRouter AI (transparent background)
   const handleGenerateWithAI = async () => {
     if (!aiPrompt.trim()) {
       setGenerationError('Por favor escribe una descripción del diseño');
@@ -311,13 +341,23 @@ export default function DesignStudioPage() {
     setGenerationError(null);
 
     try {
+      // Enhanced prompt for transparent/no background designs
+      const enhancedPrompt = `Create a design with NO BACKGROUND, TRANSPARENT BACKGROUND or SOLID WHITE BACKGROUND that can be easily removed.
+The design should be:
+- Isolated on transparent/white background
+- Clean edges suitable for print
+- High contrast and professional
+- Single isolated graphic element
+
+Design: ${aiPrompt}`;
+
       const response = await fetch('/api/admin/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: aiPrompt,
+          prompt: enhancedPrompt,
           model: 'google/gemini-2.0-flash-exp:free',
         }),
       });
@@ -327,13 +367,15 @@ export default function DesignStudioPage() {
       if (response.ok && data.imageUrl) {
         setDesignImage(data.imageUrl);
         setShowGenerator(false);
-        setAiPrompt('');
 
         // Save to history
         const history = localStorage.getItem('generated-images');
         const images = history ? JSON.parse(history) : [];
         images.unshift(data.imageUrl);
         localStorage.setItem('generated-images', JSON.stringify(images.slice(0, 20)));
+
+        // Auto-extract colors from the generated design
+        setTimeout(() => extractColorsFromImage(data.imageUrl), 500);
       } else {
         setGenerationError(data.error || 'Error al generar el diseño');
       }
@@ -343,6 +385,207 @@ export default function DesignStudioPage() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Remove background from current design
+  const handleRemoveBackground = async () => {
+    if (!designImage) return;
+
+    setIsRemovingBackground(true);
+
+    try {
+      const response = await fetch('/api/admin/remove-background', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          imageUrl: designImage,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.imageUrl) {
+        setDesignImage(data.imageUrl);
+        // Re-extract colors after background removal
+        setTimeout(() => extractColorsFromImage(data.imageUrl), 500);
+      } else {
+        alert(data.error || 'Error al quitar el fondo');
+      }
+    } catch (error) {
+      console.error('Error removing background:', error);
+      alert('Error de conexión al quitar el fondo');
+    } finally {
+      setIsRemovingBackground(false);
+    }
+  };
+
+  // Extract colors from image
+  const extractColorsFromImage = useCallback(async (imageUrl: string) => {
+    setIsExtractingColors(true);
+
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Sample at lower resolution for performance
+        const sampleSize = 100;
+        canvas.width = sampleSize;
+        canvas.height = sampleSize;
+        ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+
+        const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
+        const pixels = imageData.data;
+
+        // Count colors (ignoring transparent/near-white pixels)
+        const colorCounts: Record<string, number> = {};
+        let totalValidPixels = 0;
+
+        for (let i = 0; i < pixels.length; i += 4) {
+          const r = pixels[i];
+          const g = pixels[i + 1];
+          const b = pixels[i + 2];
+          const a = pixels[i + 3];
+
+          // Skip transparent or near-white pixels
+          if (a < 128) continue;
+          if (r > 240 && g > 240 && b > 240) continue;
+
+          // Quantize colors to reduce variations
+          const qr = Math.round(r / 32) * 32;
+          const qg = Math.round(g / 32) * 32;
+          const qb = Math.round(b / 32) * 32;
+
+          const hex = `#${qr.toString(16).padStart(2, '0')}${qg.toString(16).padStart(2, '0')}${qb.toString(16).padStart(2, '0')}`;
+          colorCounts[hex] = (colorCounts[hex] || 0) + 1;
+          totalValidPixels++;
+        }
+
+        // Sort by frequency and take top 5
+        const sortedColors = Object.entries(colorCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([hex, count], index) => ({
+            hex,
+            name: `Color ${index + 1}`,
+            percentage: Math.round((count / totalValidPixels) * 100),
+          }));
+
+        setExtractedColors(sortedColors);
+        setIsExtractingColors(false);
+      };
+
+      img.onerror = () => {
+        setIsExtractingColors(false);
+      };
+
+      img.src = imageUrl;
+    } catch (error) {
+      console.error('Error extracting colors:', error);
+      setIsExtractingColors(false);
+    }
+  }, []);
+
+  // Generate design for all placements of current garment
+  const handleGenerateAllPlacements = async () => {
+    if (!aiPrompt.trim()) {
+      setGenerationError('Por favor escribe una descripción del diseño');
+      return;
+    }
+
+    const garment = GARMENT_TYPES.find(g => g.id === garmentType);
+    if (!garment) return;
+
+    setIsGeneratingAll(true);
+    setGenerationError(null);
+
+    // Initialize all placements as generating
+    const initialDesigns: PlacementDesign[] = garment.placements.map(p => ({
+      placement: p,
+      imageUrl: '',
+      isGenerating: true,
+    }));
+    setPlacementDesigns(initialDesigns);
+
+    // Generate for each placement
+    for (let i = 0; i < garment.placements.length; i++) {
+      const placementId = garment.placements[i];
+      const placementConfig = PLACEMENTS[placementId as keyof typeof PLACEMENTS];
+
+      // Adjust prompt based on placement
+      let sizeHint = 'medium-sized';
+      if (placementConfig.maxWidth <= 25) {
+        sizeHint = 'small, minimal, icon-like';
+      } else if (placementConfig.maxWidth >= 80) {
+        sizeHint = 'large, bold, statement piece';
+      }
+
+      const placementPrompt = `Create a ${sizeHint} design variation with NO BACKGROUND, TRANSPARENT BACKGROUND.
+For ${placementConfig.name} placement.
+Design theme: ${aiPrompt}
+Style: cohesive with main design, suitable for ${garment.name}`;
+
+      try {
+        const response = await fetch('/api/admin/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: placementPrompt,
+            model: 'google/gemini-2.0-flash-exp:free',
+          }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.imageUrl) {
+          setPlacementDesigns(prev => prev.map(pd =>
+            pd.placement === placementId
+              ? { ...pd, imageUrl: data.imageUrl, isGenerating: false }
+              : pd
+          ));
+
+          // Set the first generated design as the main design
+          if (i === 0) {
+            setDesignImage(data.imageUrl);
+            setPlacement(placementId);
+            setTimeout(() => extractColorsFromImage(data.imageUrl), 500);
+          }
+        } else {
+          setPlacementDesigns(prev => prev.map(pd =>
+            pd.placement === placementId
+              ? { ...pd, isGenerating: false }
+              : pd
+          ));
+        }
+      } catch (error) {
+        console.error(`Error generating for ${placementId}:`, error);
+        setPlacementDesigns(prev => prev.map(pd =>
+          pd.placement === placementId
+            ? { ...pd, isGenerating: false }
+            : pd
+        ));
+      }
+    }
+
+    setIsGeneratingAll(false);
+    setShowMultiGenerator(false);
+  };
+
+  // Add extracted colors to collection palette
+  const addExtractedColorsToCollection = () => {
+    const newColors = extractedColors.map(c => ({
+      hex: c.hex,
+      name: c.name,
+    }));
+    setCollectionColors([...collectionColors, ...newColors]);
   };
 
   const addCollectionColor = () => {
@@ -536,17 +779,38 @@ export default function DesignStudioPage() {
               )}
 
               {designImage && (
-                <div className="mt-3 relative">
-                  <img
-                    src={designImage}
-                    alt="Design"
-                    className="w-full h-32 object-contain bg-gray-100 rounded-lg"
-                  />
+                <div className="mt-3">
+                  <div className="relative">
+                    <img
+                      src={designImage}
+                      alt="Design"
+                      className="w-full h-32 object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] rounded-lg"
+                    />
+                    <button
+                      onClick={() => setDesignImage('')}
+                      className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Remove Background Button */}
                   <button
-                    onClick={() => setDesignImage('')}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                    onClick={handleRemoveBackground}
+                    disabled={isRemovingBackground}
+                    className="w-full mt-2 p-2 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg font-bold text-sm hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
-                    <X className="w-4 h-4" />
+                    {isRemovingBackground ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Quitando fondo...
+                      </>
+                    ) : (
+                      <>
+                        <Eraser className="w-4 h-4" />
+                        Quitar Fondo
+                      </>
+                    )}
                   </button>
                 </div>
               )}
@@ -805,6 +1069,123 @@ export default function DesignStudioPage() {
 
           {/* Right Panel - Collection & Variants */}
           <div className="space-y-4">
+            {/* Multi-Placement Generator */}
+            <div className="bg-white rounded-xl p-4 shadow-sm">
+              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                <Package className="w-5 h-5 text-purple-600" />
+                Diseño Completo de Prenda
+              </h3>
+              <p className="text-sm text-gray-600 mb-3">
+                Genera un diseño para cada ubicación de la {currentGarment?.name || 'prenda'}
+              </p>
+
+              <div className="mb-3">
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  placeholder="Describe el tema del diseño... Ej: Estilo japonés minimalista con olas y monte Fuji"
+                  className="w-full p-2 border border-purple-300 rounded-lg text-sm resize-none h-16 focus:outline-none focus:border-purple-500 bg-white text-gray-900"
+                  disabled={isGeneratingAll}
+                />
+              </div>
+
+              <button
+                onClick={handleGenerateAllPlacements}
+                disabled={isGeneratingAll || !aiPrompt.trim()}
+                className="w-full p-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-bold hover:from-indigo-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isGeneratingAll ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Generando {currentGarment?.placements.length || 0} diseños...
+                  </>
+                ) : (
+                  <>
+                    <Grid3X3 className="w-5 h-5" />
+                    Generar para {currentGarment?.placements.length || 0} Ubicaciones
+                  </>
+                )}
+              </button>
+
+              {/* Show generated placement designs */}
+              {placementDesigns.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs text-gray-500 mb-2">Diseños generados:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {placementDesigns.map((pd) => (
+                      <div
+                        key={pd.placement}
+                        className={`aspect-square rounded-lg border-2 overflow-hidden cursor-pointer transition-all relative ${
+                          placement === pd.placement
+                            ? 'border-purple-600 ring-2 ring-purple-300'
+                            : 'border-gray-200 hover:border-purple-400'
+                        }`}
+                        onClick={() => {
+                          if (pd.imageUrl) {
+                            setDesignImage(pd.imageUrl);
+                            setPlacement(pd.placement);
+                          }
+                        }}
+                      >
+                        {pd.isGenerating ? (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                            <Loader2 className="w-6 h-6 animate-spin text-purple-500" />
+                          </div>
+                        ) : pd.imageUrl ? (
+                          <img
+                            src={pd.imageUrl}
+                            alt={PLACEMENTS[pd.placement as keyof typeof PLACEMENTS]?.name}
+                            className="w-full h-full object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">
+                            <X className="w-6 h-6" />
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[8px] text-center py-0.5 truncate">
+                          {PLACEMENTS[pd.placement as keyof typeof PLACEMENTS]?.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Extracted Colors from Design */}
+            {extractedColors.length > 0 && (
+              <div className="bg-white rounded-xl p-4 shadow-sm">
+                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                  <Pipette className="w-5 h-5 text-purple-600" />
+                  Colores del Diseño
+                </h3>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {extractedColors.map((color, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center gap-2 bg-gray-50 rounded-lg p-2"
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg border shadow-sm"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <div className="text-xs">
+                        <div className="font-mono text-gray-700">{color.hex}</div>
+                        <div className="text-gray-500">{color.percentage}%</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={addExtractedColorsToCollection}
+                  className="w-full p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Agregar a Paleta
+                </button>
+              </div>
+            )}
+
             {/* Collection Palette */}
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
