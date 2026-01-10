@@ -14,6 +14,9 @@ import {
   Shirt,
   FolderOpen,
   Lightbulb,
+  Package,
+  TrendingUp,
+  Tags,
 } from 'lucide-react';
 
 const menuItems = [
@@ -22,7 +25,13 @@ const menuItems = [
   { href: '/studio', label: 'Design Studio', icon: Shirt },
   { href: '/collections', label: 'Colecciones', icon: FolderOpen },
   { href: '/automatizaciones', label: 'Batch', icon: Layers },
-  { href: '/settings', label: 'Configuración', icon: Settings },
+  { href: '/settings', label: 'Configuracion', icon: Settings },
+];
+
+const adminItems = [
+  { href: '/admin/orders', label: 'Pedidos', icon: Package },
+  { href: '/admin/profitability', label: 'Rentabilidad', icon: TrendingUp },
+  { href: '/admin/products', label: 'Productos', icon: Tags },
 ];
 
 const externalLinks = [
@@ -54,6 +63,30 @@ export default function Sidebar() {
           Menu Principal
         </p>
         {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
+                isActive
+                  ? 'bg-purple-700 text-white'
+                  : 'text-purple-200 hover:bg-purple-700/50 hover:text-white'
+              }`}
+            >
+              <Icon className="w-5 h-5" />
+              {item.label}
+            </Link>
+          );
+        })}
+
+        <div className="my-4 border-t border-purple-700" />
+
+        <p className="text-purple-400 text-xs uppercase font-bold mb-2 px-3">
+          Administracion
+        </p>
+        {adminItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
           return (

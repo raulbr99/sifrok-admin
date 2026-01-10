@@ -24,8 +24,12 @@ import {
   Pipette,
   Check,
   RefreshCw,
+  AlertTriangle,
+  AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
+import { validateImageForPrint, getValidationRequirements } from '@/actions/studio';
 
 // Garment types with their placement areas
 const GARMENT_TYPES = [
@@ -148,6 +152,15 @@ export default function DesignStudioPage() {
   // Model from settings
   const [imageModel, setImageModel] = useState('google/gemini-2.0-flash-exp:free');
 
+  // Validation state
+  const [validationResults, setValidationResults] = useState<Record<string, {
+    isValid: boolean;
+    warnings: string[];
+    errors: string[];
+  }>>({});
+  const [isValidating, setIsValidating] = useState(false);
+  const [showValidationModal, setShowValidationModal] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Load image model from settings
@@ -178,63 +191,80 @@ export default function DesignStudioPage() {
     }
   }, [garmentType]);
 
-  // Extract colors from image
-  const extractColorsFromImage = useCallback(async (imageUrl: string) => {
-    try {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
+  // Extract colors from all designs
+  useEffect(() => {
+    const designsWithImages = placementDesigns.filter(pd => pd.imageUrl && !pd.isGenerating);
+    if (designsWithImages.length === 0) {
+      setExtractedColors([]);
+      return;
+    }
 
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
+    const extractColors = async () => {
+      const allColorCounts: Record<string, number> = {};
+      let totalPixels = 0;
 
-        const sampleSize = 100;
-        canvas.width = sampleSize;
-        canvas.height = sampleSize;
-        ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
+      for (const design of designsWithImages) {
+        try {
+          const img = new window.Image();
+          img.crossOrigin = 'anonymous';
 
-        const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
-        const pixels = imageData.data;
+          await new Promise<void>((resolve) => {
+            img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const ctx = canvas.getContext('2d');
+              if (!ctx) { resolve(); return; }
 
-        const colorCounts: Record<string, number> = {};
-        let totalValidPixels = 0;
+              const sampleSize = 80;
+              canvas.width = sampleSize;
+              canvas.height = sampleSize;
+              ctx.drawImage(img, 0, 0, sampleSize, sampleSize);
 
-        for (let i = 0; i < pixels.length; i += 4) {
-          const r = pixels[i];
-          const g = pixels[i + 1];
-          const b = pixels[i + 2];
-          const a = pixels[i + 3];
+              const imageData = ctx.getImageData(0, 0, sampleSize, sampleSize);
+              const pixels = imageData.data;
 
-          if (a < 128) continue;
-          if (r > 240 && g > 240 && b > 240) continue;
+              for (let i = 0; i < pixels.length; i += 4) {
+                const r = pixels[i];
+                const g = pixels[i + 1];
+                const b = pixels[i + 2];
+                const a = pixels[i + 3];
 
-          const qr = Math.round(r / 32) * 32;
-          const qg = Math.round(g / 32) * 32;
-          const qb = Math.round(b / 32) * 32;
+                if (a < 128) continue;
+                if (r > 240 && g > 240 && b > 240) continue;
+                if (r < 15 && g < 15 && b < 15) continue;
 
-          const hex = `#${qr.toString(16).padStart(2, '0')}${qg.toString(16).padStart(2, '0')}${qb.toString(16).padStart(2, '0')}`;
-          colorCounts[hex] = (colorCounts[hex] || 0) + 1;
-          totalValidPixels++;
+                const qr = Math.round(r / 32) * 32;
+                const qg = Math.round(g / 32) * 32;
+                const qb = Math.round(b / 32) * 32;
+
+                const hex = `#${qr.toString(16).padStart(2, '0')}${qg.toString(16).padStart(2, '0')}${qb.toString(16).padStart(2, '0')}`;
+                allColorCounts[hex] = (allColorCounts[hex] || 0) + 1;
+                totalPixels++;
+              }
+              resolve();
+            };
+            img.onerror = () => resolve();
+            img.src = design.imageUrl;
+          });
+        } catch (error) {
+          console.error('Error extracting colors:', error);
         }
+      }
 
-        const sortedColors = Object.entries(colorCounts)
+      if (totalPixels > 0) {
+        const sortedColors = Object.entries(allColorCounts)
           .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
+          .slice(0, 6)
           .map(([hex, count], index) => ({
             hex,
             name: `Color ${index + 1}`,
-            percentage: Math.round((count / totalValidPixels) * 100),
+            percentage: Math.round((count / totalPixels) * 100),
           }));
-
         setExtractedColors(sortedColors);
-      };
+      }
+    };
 
-      img.src = imageUrl;
-    } catch (error) {
-      console.error('Error extracting colors:', error);
-    }
-  }, []);
+    extractColors();
+  }, [placementDesigns]);
 
   // Generate designs for ALL placements
   const handleGenerateAllDesigns = async () => {
@@ -258,10 +288,12 @@ export default function DesignStudioPage() {
       const placementId = currentGarment.placements[i];
       const placementConfig = PLACEMENTS[placementId];
 
-      const placementPrompt = `Create a ${placementConfig.sizeHint} design with TRANSPARENT BACKGROUND or WHITE BACKGROUND.
-For ${placementConfig.name} placement on a ${currentGarment.name}.
+      const placementPrompt = `Create a ${placementConfig.sizeHint} design as an ISOLATED graphic with NO BACKGROUND (transparent PNG).
+CRITICAL: The design MUST have NO background at all - completely transparent/cutout style, ready for print-on-demand.
+Placement: ${placementConfig.name} on a ${currentGarment.name}.
 Theme: ${designPrompt}
-Style: cohesive, professional, suitable for print, isolated graphic element with clean edges.`;
+Style: Clean vector-like artwork, sharp edges, professional quality, suitable for screen printing or DTG.
+Output: Single isolated design element ONLY, no background, no borders, no frames.`;
 
       try {
         const response = await fetch('/api/admin/generate', {
@@ -281,11 +313,6 @@ Style: cohesive, professional, suitable for print, isolated graphic element with
               ? { ...pd, imageUrl: data.imageUrl, isGenerating: false }
               : pd
           ));
-
-          // Extract colors from first design
-          if (i === 0) {
-            extractColorsFromImage(data.imageUrl);
-          }
         } else {
           setPlacementDesigns(prev => prev.map(pd =>
             pd.placement === placementId
@@ -321,10 +348,12 @@ Style: cohesive, professional, suitable for print, isolated graphic element with
         : pd
     ));
 
-    const placementPrompt = `Create a ${placementConfig.sizeHint} design with TRANSPARENT BACKGROUND.
-For ${placementConfig.name} placement on a ${currentGarment.name}.
+    const placementPrompt = `Create a ${placementConfig.sizeHint} design as an ISOLATED graphic with NO BACKGROUND (transparent PNG).
+CRITICAL: The design MUST have NO background at all - completely transparent/cutout style, ready for print-on-demand.
+Placement: ${placementConfig.name} on a ${currentGarment.name}.
 Theme: ${designPrompt}
-Style: cohesive, professional, suitable for print.`;
+Style: Clean vector-like artwork, sharp edges, professional quality, suitable for screen printing or DTG.
+Output: Single isolated design element ONLY, no background, no borders, no frames.`;
 
     try {
       const response = await fetch('/api/admin/generate', {
@@ -403,7 +432,7 @@ Style: cohesive, professional, suitable for print.`;
             ? { ...pd, imageUrl }
             : pd
         ));
-        extractColorsFromImage(imageUrl);
+        // Colors will be extracted automatically via useEffect
       };
       reader.readAsDataURL(file);
     }
@@ -412,6 +441,74 @@ Style: cohesive, professional, suitable for print.`;
   // Count completed designs
   const completedDesigns = placementDesigns.filter(pd => pd.imageUrl).length;
   const totalPlacements = currentGarment?.placements.length || 0;
+
+  // Validate all designs before saving
+  const handleValidateAndSave = async () => {
+    const designsWithImages = placementDesigns.filter(pd => pd.imageUrl);
+    if (designsWithImages.length === 0) {
+      alert('No hay disenios para guardar');
+      return;
+    }
+
+    setIsValidating(true);
+    const results: Record<string, { isValid: boolean; warnings: string[]; errors: string[] }> = {};
+
+    for (const design of designsWithImages) {
+      try {
+        const validation = await validateImageForPrint(design.imageUrl, design.placement);
+        results[design.placement] = validation;
+      } catch (error) {
+        results[design.placement] = {
+          isValid: false,
+          warnings: [],
+          errors: ['Error al validar la imagen'],
+        };
+      }
+    }
+
+    setValidationResults(results);
+    setIsValidating(false);
+
+    // Check if there are any errors
+    const hasErrors = Object.values(results).some(r => !r.isValid);
+    const hasWarnings = Object.values(results).some(r => r.warnings.length > 0);
+
+    if (hasErrors) {
+      setShowValidationModal(true);
+    } else if (hasWarnings) {
+      // Show warnings but allow to continue
+      setShowValidationModal(true);
+    } else {
+      // All valid, proceed to save
+      handleSaveToCollection();
+    }
+  };
+
+  // Save to collection
+  const handleSaveToCollection = async () => {
+    if (!collectionName.trim()) {
+      alert('Por favor ingresa un nombre para la coleccion');
+      return;
+    }
+
+    const designsToSave = placementDesigns
+      .filter(pd => pd.imageUrl)
+      .map(pd => ({
+        placement: pd.placement,
+        imageUrl: pd.imageUrl,
+        garmentType: garmentType,
+      }));
+
+    // Here you would save to your collections API
+    console.log('Saving to collection:', {
+      name: collectionName,
+      designs: designsToSave,
+      colors: extractedColors,
+    });
+
+    setShowValidationModal(false);
+    alert('Coleccion guardada exitosamente!');
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -435,11 +532,21 @@ Style: cohesive, professional, suitable for print.`;
                 </span>
               )}
               <button
-                disabled={completedDesigns === 0}
+                onClick={handleValidateAndSave}
+                disabled={completedDesigns === 0 || isValidating}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
-                Guardar Colección
+                {isValidating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Validando...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    Guardar Coleccion
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -772,6 +879,92 @@ Style: cohesive, professional, suitable for print.`;
           </div>
         </div>
       </div>
+
+      {/* Validation Modal */}
+      {showValidationModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-gray-900">Validacion de Disenios</h2>
+              <button
+                onClick={() => setShowValidationModal(false)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {Object.entries(validationResults).map(([placement, result]) => (
+                <div
+                  key={placement}
+                  className={`p-4 rounded-lg border ${
+                    !result.isValid
+                      ? 'bg-red-50 border-red-200'
+                      : result.warnings.length > 0
+                      ? 'bg-yellow-50 border-yellow-200'
+                      : 'bg-green-50 border-green-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    {!result.isValid ? (
+                      <AlertCircle className="w-5 h-5 text-red-600" />
+                    ) : result.warnings.length > 0 ? (
+                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                    ) : (
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                    )}
+                    <span className="font-medium text-gray-900">
+                      {PLACEMENTS[placement]?.name || placement}
+                    </span>
+                  </div>
+
+                  {result.errors.length > 0 && (
+                    <div className="mt-2">
+                      {result.errors.map((error, i) => (
+                        <p key={i} className="text-sm text-red-700">
+                          {error}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
+                  {result.warnings.length > 0 && (
+                    <div className="mt-2">
+                      {result.warnings.map((warning, i) => (
+                        <p key={i} className="text-sm text-yellow-700">
+                          {warning}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+
+                  {result.isValid && result.warnings.length === 0 && (
+                    <p className="text-sm text-green-700">Imagen valida para impresion</p>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
+              <button
+                onClick={() => setShowValidationModal(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                Cancelar
+              </button>
+              {Object.values(validationResults).every(r => r.isValid) && (
+                <button
+                  onClick={handleSaveToCollection}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                >
+                  Guardar de todas formas
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

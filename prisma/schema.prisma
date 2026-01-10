@@ -119,6 +119,16 @@ model Order {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
+  // Campos Gelato
+  gelatoOrderId     String?     @unique
+  gelatoStatus      String?     // created, passed, in_production, shipped, delivered, cancelled
+  gelatoTrackingUrl String?
+
+  // Campos para profit calculation
+  productionCost    Float?      // Coste de Gelato
+  stripeFee         Float?      // Comision Stripe (2.9% + 0.30)
+  netProfit         Float?      // Profit neto calculado
+
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
 }
@@ -275,4 +285,29 @@ enum TicketPriority {
   MEDIUM
   HIGH
   URGENT
+}
+
+// Mapeo de productos locales a Gelato
+model ProductMapping {
+  id               String   @id @default(cuid())
+  localProductId   String   @unique  // ID del producto en tu sistema
+  gelatoProductUid String             // productUid de Gelato
+  productName      String
+  basePrice        Float              // Precio base de Gelato (coste)
+  salePrice        Float              // Precio de venta
+  category         String?
+  placements       String?  @db.Text  // JSON de placement configs
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// Logs de webhooks para debugging y audit
+model WebhookLog {
+  id          String   @id @default(cuid())
+  source      String   // 'stripe' | 'gelato'
+  eventType   String   // checkout.session.completed, order_shipped, etc
+  payload     String   @db.Text  // JSON del payload
+  processed   Boolean  @default(false)
+  error       String?  @db.Text
+  createdAt   DateTime @default(now())
 }
