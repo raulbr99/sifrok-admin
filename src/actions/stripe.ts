@@ -2,7 +2,7 @@
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { stripe, createRefund, getPaymentIntent, calculateStripeFee } from '@/lib/stripe'
+import { createRefund, getPaymentIntent, calculateStripeFee } from '@/lib/stripe'
 import { revalidatePath } from 'next/cache'
 
 export interface RefundResult {

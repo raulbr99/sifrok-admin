@@ -1,8 +1,19 @@
 import Stripe from 'stripe'
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-12-15.clover',
-})
+let stripeInstance: Stripe | null = null
+
+function getStripe(): Stripe {
+  if (!stripeInstance) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error('STRIPE_SECRET_KEY is not configured')
+    }
+    stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: '2025-12-15.clover',
+    })
+  }
+  return stripeInstance
+}
+
 
 /**
  * Calcular comision de Stripe
@@ -27,7 +38,7 @@ export async function createRefund(
     refundData.amount = Math.round(amount * 100) // Stripe usa centavos
   }
 
-  return stripe.refunds.create(refundData)
+  return getStripe().refunds.create(refundData)
 }
 
 /**
@@ -36,7 +47,7 @@ export async function createRefund(
 export async function getPaymentIntent(
   paymentIntentId: string
 ): Promise<Stripe.PaymentIntent> {
-  return stripe.paymentIntents.retrieve(paymentIntentId)
+  return getStripe().paymentIntents.retrieve(paymentIntentId)
 }
 
 /**
@@ -45,7 +56,7 @@ export async function getPaymentIntent(
 export async function getCheckoutSession(
   sessionId: string
 ): Promise<Stripe.Checkout.Session> {
-  return stripe.checkout.sessions.retrieve(sessionId, {
+  return getStripe().checkout.sessions.retrieve(sessionId, {
     expand: ['line_items', 'payment_intent'],
   })
 }
@@ -57,7 +68,7 @@ export function constructWebhookEvent(
   payload: string | Buffer,
   signature: string
 ): Stripe.Event {
-  return stripe.webhooks.constructEvent(
+  return getStripe().webhooks.constructEvent(
     payload,
     signature,
     process.env.STRIPE_WEBHOOK_SECRET!
