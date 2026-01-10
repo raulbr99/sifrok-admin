@@ -182,10 +182,3 @@ export async function syncPricesFromGelato() {
   return results
 }
 
-/**
- * Calcular margen de un producto
- */
-export function calculateMargin(basePrice: number, salePrice: number): number {
-  if (salePrice <= 0) return 0
-  return ((salePrice - basePrice) / salePrice) * 100
-}

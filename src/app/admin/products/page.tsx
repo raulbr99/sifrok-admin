@@ -16,9 +16,14 @@ import {
   updateProductMapping,
   deleteProductMapping,
   syncPricesFromGelato,
-  calculateMargin,
   type ProductMappingInput,
 } from '@/actions/products'
+
+// Utility function to calculate margin
+function calculateMargin(basePrice: number, salePrice: number): number {
+  if (salePrice <= 0) return 0
+  return ((salePrice - basePrice) / salePrice) * 100
+}
 
 interface ProductMapping {
   id: string
