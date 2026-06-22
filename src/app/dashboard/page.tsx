@@ -143,7 +143,7 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <PageHeader title="Dashboard" actions={<AdminExportButton />} />
+        <PageHeader title="Resumen" subtitle="Vista general de tu tienda" actions={<AdminExportButton />} />
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

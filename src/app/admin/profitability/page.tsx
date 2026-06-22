@@ -66,7 +66,7 @@ export default function ProfitabilityPage() {
     <div className="p-4 sm:p-6 md:p-8">
       <PageHeader
         title="Rentabilidad"
-        subtitle="Analiza ingresos, costes y margenes de beneficio"
+        subtitle="Analiza ingresos, costes y márgenes de beneficio"
         icon={TrendingUp}
         actions={
           <>

@@ -175,7 +175,7 @@ export default function OrdersPage() {
     setProcessingId(orderId)
     try {
       const profit = await calculateOrderProfit(orderId)
-      toast.success(`Profit calculado: ${profit.netProfit.toFixed(2)} EUR (margen ${profit.margin.toFixed(1)}%).`)
+      toast.success(`Beneficio calculado: ${profit.netProfit.toFixed(2)} EUR (margen ${profit.margin.toFixed(1)}%).`)
       loadOrders()
     } catch (error: any) {
       toast.error('No se pudo calcular el profit. Inténtalo de nuevo.')
@@ -338,8 +338,8 @@ export default function OrdersPage() {
               onClick={() => handleCalculateProfit(row.original.id)}
               disabled={processingId === row.original.id}
               className="p-2 text-ink-muted hover:text-success"
-              title="Calcular profit"
-              aria-label="Calcular profit"
+              title="Calcular beneficio"
+              aria-label="Calcular beneficio"
             >
               <DollarSign className="w-4 h-4" aria-hidden="true" />
             </Button>

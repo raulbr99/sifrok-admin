@@ -1011,7 +1011,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
       <Modal
         open={showValidationModal}
         onClose={() => setShowValidationModal(false)}
-        title="Validacion de Disenios"
+        title="Validación de Diseños"
         size="md"
       >
         <div className="space-y-4">

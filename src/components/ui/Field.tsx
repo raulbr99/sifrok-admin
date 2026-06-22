@@ -1,6 +1,6 @@
 /** Shared input styling — apply to <input>/<select>/<textarea> for a consistent control vocabulary. */
 export const inputClass =
-  'w-full rounded-btn border border-border-strong bg-surface px-3 py-2 text-sm text-ink placeholder-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
+  'w-full rounded-btn border border-border-strong bg-surface px-3.5 py-2.5 text-sm text-ink placeholder-ink-subtle focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink';
 
 interface FieldProps {
   label: string;

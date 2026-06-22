@@ -26,12 +26,12 @@ import {
 const menuItems = [
   { href: '/', label: 'Generador', icon: Sparkles },
   { href: '/ideas', label: 'Ideas', icon: Lightbulb },
-  { href: '/studio', label: 'Design Studio', icon: Shirt },
+  { href: '/studio', label: 'Estudio', icon: Shirt },
   { href: '/multi-design', label: 'Multi-Diseño', icon: LayoutGrid },
   { href: '/designs', label: 'Diseños', icon: Images },
   { href: '/collections', label: 'Colecciones', icon: FolderOpen },
-  { href: '/automatizaciones', label: 'Batch', icon: Layers },
-  { href: '/settings', label: 'Configuracion', icon: Settings },
+  { href: '/automatizaciones', label: 'Automatización', icon: Layers },
+  { href: '/settings', label: 'Configuración', icon: Settings },
 ];
 
 const adminItems = [
@@ -153,14 +153,14 @@ export default function Sidebar() {
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-          <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Menu Principal</p>
+          <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Menú Principal</p>
           {menuItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} Icon={item.icon} active={pathname === item.href} />
           ))}
 
           <div className="my-4 border-t border-panel-border" />
 
-          <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Administracion</p>
+          <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Administración</p>
           {adminItems.map((item) => (
             <NavLink key={item.href} href={item.href} label={item.label} Icon={item.icon} active={pathname === item.href} />
           ))}
