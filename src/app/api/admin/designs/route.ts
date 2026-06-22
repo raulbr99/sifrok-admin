@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
   const designs = await prisma.design.findMany({
     where: collectionId ? { collectionId } : undefined,
     orderBy: { createdAt: 'desc' },
+    include: { collection: { select: { id: true, name: true } } },
   });
   return NextResponse.json(designs);
 }

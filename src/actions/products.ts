@@ -225,3 +225,59 @@ export async function listPrintfulSyncVariants(): Promise<PrintfulSyncVariantOpt
 
   return out
 }
+
+export interface SyncMappingsResult {
+  created: number
+  updated: number
+  total: number
+  errors: string[]
+}
+
+/**
+ * Importa TODAS las variantes sincronizadas de Printful y crea/actualiza los
+ * ProductMapping en bloque. Clave: localProductId = external_id de Printful (o
+ * `printful-{syncVariantId}` si no hay). Rellena printfulSyncVariantId y, al crear,
+ * usa retail_price como precio inicial. Al actualizar NO toca precios (los ajusta
+ * el admin), solo refresca nombre + sync_variant_id. Idempotente (re-ejecutable).
+ */
+export async function syncProductMappingsFromPrintful(): Promise<SyncMappingsResult> {
+  const session = await auth()
+  if (!session || session.user?.role !== 'admin') {
+    throw new Error('No autorizado')
+  }
+
+  const res: SyncMappingsResult = { created: 0, updated: 0, total: 0, errors: [] }
+  const list = await printfulApi.get('/store/products')
+  const products: any[] = (list.data?.result || []).slice(0, 100)
+
+  for (const p of products) {
+    try {
+      const detail = await printfulApi.get(`/store/products/${p.id}`)
+      const variants: any[] = detail.data?.result?.sync_variants || []
+      for (const v of variants) {
+        res.total++
+        const localProductId = (v.external_id && String(v.external_id)) || `printful-${v.id}`
+        const price = parseFloat(v.retail_price) || 0
+        const productName = `${p.name} - ${v.name}`.slice(0, 200)
+        const existing = await prisma.productMapping.findUnique({ where: { localProductId } })
+        if (existing) {
+          await prisma.productMapping.update({
+            where: { localProductId },
+            data: { printfulSyncVariantId: v.id, productName },
+          })
+          res.updated++
+        } else {
+          await prisma.productMapping.create({
+            data: { localProductId, printfulSyncVariantId: v.id, productName, basePrice: price, salePrice: price },
+          })
+          res.created++
+        }
+      }
+    } catch (e: any) {
+      res.errors.push(`${p.name}: ${e.message}`)
+    }
+  }
+
+  revalidatePath('/admin/products')
+  return res
+}

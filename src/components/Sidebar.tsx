@@ -20,6 +20,7 @@ import {
   X,
   LayoutGrid,
   Percent,
+  Images,
 } from 'lucide-react';
 
 const menuItems = [
@@ -27,6 +28,7 @@ const menuItems = [
   { href: '/ideas', label: 'Ideas', icon: Lightbulb },
   { href: '/studio', label: 'Design Studio', icon: Shirt },
   { href: '/multi-design', label: 'Multi-Diseño', icon: LayoutGrid },
+  { href: '/designs', label: 'Diseños', icon: Images },
   { href: '/collections', label: 'Colecciones', icon: FolderOpen },
   { href: '/automatizaciones', label: 'Batch', icon: Layers },
   { href: '/settings', label: 'Configuracion', icon: Settings },

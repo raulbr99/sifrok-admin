@@ -8,6 +8,7 @@ import {
   Trash2,
   Save,
   Search,
+  DownloadCloud,
 } from 'lucide-react'
 import {
   getProductMappings,
@@ -15,6 +16,7 @@ import {
   updateProductMapping,
   deleteProductMapping,
   listPrintfulSyncVariants,
+  syncProductMappingsFromPrintful,
   type PrintfulSyncVariantOption,
 } from '@/actions/products'
 import Modal from '@/components/ui/Modal'
@@ -70,6 +72,7 @@ export default function ProductsPage() {
   const [showVariantPicker, setShowVariantPicker] = useState(false)
   const [variantsLoading, setVariantsLoading] = useState(false)
   const [variants, setVariants] = useState<PrintfulSyncVariantOption[]>([])
+  const [syncing, setSyncing] = useState(false)
   const { toast } = useToast()
   const confirm = useConfirm()
 
@@ -86,6 +89,26 @@ export default function ProductsPage() {
       console.error('Error loading mappings:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleSyncFromPrintful() {
+    setSyncing(true)
+    try {
+      const res = await syncProductMappingsFromPrintful()
+      if (res.total === 0) {
+        toast.info('No se encontraron variantes sincronizadas en Printful.')
+      } else {
+        toast.success(`Printful: ${res.created} creados, ${res.updated} actualizados (${res.total} variantes).`)
+      }
+      if (res.errors.length) {
+        toast.error(`${res.errors.length} producto(s) con error al sincronizar.`)
+      }
+      loadMappings()
+    } catch {
+      toast.error('No se pudo sincronizar con Printful. Revisa la API key.')
+    } finally {
+      setSyncing(false)
     }
   }
 
@@ -186,17 +209,28 @@ export default function ProductsPage() {
         subtitle="Conecta tus productos locales con Printful"
         icon={Tags}
         actions={
-          <Button
-            variant="primary"
-            onClick={() => {
-              resetForm()
-              setEditingId(null)
-              setShowForm(true)
-            }}
-          >
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            Nuevo Mapeo
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="secondary"
+              onClick={handleSyncFromPrintful}
+              loading={syncing}
+              disabled={syncing}
+            >
+              <DownloadCloud className="w-4 h-4" aria-hidden="true" />
+              {syncing ? 'Sincronizando…' : 'Sincronizar de Printful'}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => {
+                resetForm()
+                setEditingId(null)
+                setShowForm(true)
+              }}
+            >
+              <Plus className="w-4 h-4" aria-hidden="true" />
+              Nuevo Mapeo
+            </Button>
+          </div>
         }
       />
 
