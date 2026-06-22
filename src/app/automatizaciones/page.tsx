@@ -225,6 +225,8 @@ export default function BatchGeneratorPage() {
                           <img
                             src={result.imageUrl}
                             alt={`Diseño generado ${result.index}: ${result.prompt}`}
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-contain"
                           />
                           <button

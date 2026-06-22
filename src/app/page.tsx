@@ -286,8 +286,9 @@ export default function DesignGeneratorPage() {
                 <img
                   src={generatedImage}
                   alt="Diseño generado con IA"
+                  decoding="async"
                   className="max-w-full h-auto mx-auto rounded-card"
-                  style={{ maxHeight: '500px' }}
+                  style={{ maxHeight: '500px', aspectRatio: '1 / 1', objectFit: 'contain' }}
                 />
               </div>
 
@@ -331,6 +332,8 @@ export default function DesignGeneratorPage() {
                   <img
                     src={img}
                     alt={`Diseño ${index + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-32 object-cover rounded-card cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setGeneratedImage(img)}
                   />

@@ -484,6 +484,8 @@ export default function MultiDesignPage() {
                     <img
                       src={design.imageUrl}
                       alt={`Diseño generado para ${design.label}`}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-auto rounded"
                     />
                   </div>

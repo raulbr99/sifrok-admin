@@ -664,6 +664,8 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                         <img
                           src={pd.imageUrl}
                           alt={config?.name ? `Diseño para ${config.name}` : 'Diseño generado'}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                         />
                       ) : (
@@ -746,6 +748,8 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   <img
                     src={selectedDesign.imageUrl}
                     alt={selectedPlacement ? `Vista previa del diseño en ${PLACEMENTS[selectedPlacement]?.name}` : 'Vista previa del diseño'}
+                    loading="eager"
+                    decoding="async"
                     className="absolute object-contain pointer-events-none"
                     style={{
                       left: `${PLACEMENTS[selectedPlacement!]?.x}%`,
@@ -790,6 +794,8 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     <img
                       src={selectedDesign.imageUrl}
                       alt={selectedPlacement ? `Diseño seleccionado para ${PLACEMENTS[selectedPlacement]?.name}` : 'Diseño seleccionado'}
+                      loading="eager"
+                      decoding="async"
                       className="w-full h-48 object-contain rounded-lg bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                     />
                   </div>
