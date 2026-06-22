@@ -360,7 +360,7 @@ export default function OrdersPage() {
   })
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       <PageHeader
         title="Pedidos"
         subtitle="Gestiona pedidos, estados y reembolsos"

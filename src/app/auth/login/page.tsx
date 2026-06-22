@@ -40,8 +40,8 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-panel ml-0">
-      <div className="w-full max-w-md p-8">
-        <div className="bg-surface rounded-card border border-border p-8">
+      <div className="w-full max-w-md p-4 sm:p-6 md:p-8">
+        <div className="bg-surface rounded-card border border-border p-6 sm:p-8">
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-accent rounded-full mb-4">

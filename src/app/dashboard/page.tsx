@@ -109,11 +109,11 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen p-8">
+      <div className="min-h-screen p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-surface-2 rounded w-48" />
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="h-32 bg-surface-2 rounded-card" />
               ))}
@@ -140,12 +140,12 @@ export default function AdminDashboard() {
   if (!stats) return null;
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8">
       <div className="max-w-7xl mx-auto">
         <PageHeader title="Dashboard" actions={<AdminExportButton />} />
 
         {/* Overview cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
             <Clock className="w-5 h-5" aria-hidden="true" />
             Hoy
           </h2>
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <p className="text-on-panel-muted">Pedidos</p>
               <p className="text-3xl font-bold">{stats.today.orders}</p>
@@ -282,7 +282,7 @@ export default function AdminDashboard() {
                     <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-accent-ink">
                       {index + 1}
                     </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       <p className="font-medium text-ink truncate">
                         {product.name}
                       </p>

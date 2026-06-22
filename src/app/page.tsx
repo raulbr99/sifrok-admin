@@ -187,7 +187,7 @@ export default function DesignGeneratorPage() {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <div className="min-h-screen p-4 sm:p-6 md:p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <PageHeader
@@ -229,7 +229,7 @@ export default function DesignGeneratorPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
             <Button
               variant="secondary"
               onClick={handleEnhancePrompt}
@@ -325,7 +325,7 @@ export default function DesignGeneratorPage() {
         {generatedImages.length > 0 && (
           <Card className="p-8 mb-8">
             <h3 className="text-xl font-bold text-ink mb-4">Historial de esta sesión</h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {generatedImages.map((img, index) => (
                 <div key={index} className="relative group">
                   <img

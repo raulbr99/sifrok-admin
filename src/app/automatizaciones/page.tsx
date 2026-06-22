@@ -212,7 +212,7 @@ export default function BatchGeneratorPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 max-h-[500px] overflow-y-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[500px] overflow-y-auto">
                   {batchResults.map((result) => (
                     <div
                       key={result.index}

@@ -36,12 +36,10 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-bg text-ink`}
       >
         <Providers>
-          <div className="flex min-h-screen">
-            <Sidebar />
-            <main className="flex-1 ml-64">
-              {children}
-            </main>
-          </div>
+          <Sidebar />
+          <main className="min-h-screen md:ml-64">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>

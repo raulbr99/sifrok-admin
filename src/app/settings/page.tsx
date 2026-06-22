@@ -203,8 +203,8 @@ export default function SettingsPage() {
           <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
               <h1 className="text-3xl font-black text-ink flex items-center gap-3">
                 <Settings className="w-8 h-8 text-ink" aria-hidden="true" />
                 Configuración

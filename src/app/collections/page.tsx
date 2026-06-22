@@ -219,8 +219,8 @@ export default function CollectionsPage() {
           <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
               <h1 className="text-3xl font-black text-ink flex items-center gap-3">
                 <FolderOpen className="w-8 h-8 text-ink" aria-hidden="true" />
                 Colecciones
@@ -432,7 +432,7 @@ export default function CollectionsPage() {
               <span className="block text-sm font-medium text-ink mb-2">
                 Tipos de Prenda
               </span>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {GARMENT_OPTIONS.map((garment) => (
                   <button
                     key={garment.id}

@@ -569,7 +569,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 <span className="bg-accent text-accent-ink w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold" aria-hidden="true">1</span>
                 Selecciona el Producto
               </h2>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
                 {GARMENT_TYPES.map((garment) => (
                   <button
                     key={garment.id}
@@ -633,7 +633,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
         </Card>
 
         {/* Main Content: Placement Grid & Preview */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Placement Designs Grid */}
           <div className="lg:col-span-1 space-y-4">
             <Card className="p-4">

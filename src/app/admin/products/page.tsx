@@ -141,7 +141,7 @@ export default function ProductsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       <PageHeader
         title="Mapeo de Productos"
         subtitle="Conecta tus productos locales con Printful"
@@ -279,7 +279,8 @@ export default function ProductsPage() {
 
       {/* Table */}
       <div className="bg-surface border border-border rounded-card overflow-hidden">
-        <table className="w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full">
           <thead className="bg-surface-2 border-b border-border">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
@@ -383,7 +384,8 @@ export default function ProductsPage() {
               })
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
     </div>
   )

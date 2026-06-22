@@ -316,7 +316,7 @@ export default function PromocionesAdminPage() {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="promo-type" className="block mb-2 font-bold text-ink">
                   Tipo de descuento *
@@ -349,7 +349,7 @@ export default function PromocionesAdminPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="promo-start-date" className="block mb-2 font-bold text-ink">
                   Fecha inicio (opcional)
@@ -377,7 +377,7 @@ export default function PromocionesAdminPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="promo-min-amount" className="block mb-2 font-bold text-ink">
                   Compra mínima (€)

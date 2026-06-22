@@ -63,7 +63,7 @@ export default function ProfitabilityPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 md:p-8">
       <PageHeader
         title="Rentabilidad"
         subtitle="Analiza ingresos, costes y margenes de beneficio"
@@ -99,7 +99,7 @@ export default function ProfitabilityPage() {
       ) : stats ? (
         <div className="space-y-8" aria-live="polite">
           {/* Main Stats */}
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-info-bg rounded-card flex items-center justify-center">
@@ -149,7 +149,7 @@ export default function ProfitabilityPage() {
           </div>
 
           {/* Secondary Stats */}
-          <div className="grid grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
