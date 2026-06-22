@@ -195,29 +195,31 @@ export default function DesignGeneratorPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
           {/* Prompt Input */}
           <div className="mb-6">
-            <label className="block mb-2 text-gray-700 font-bold text-lg">
+            <label htmlFor="ai-prompt" className="block mb-2 text-gray-700 font-bold text-lg">
               Describe tu diseño
             </label>
             <textarea
+              id="ai-prompt"
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Ej: Un gato espacial con colores neón, estilo cyberpunk, fondo transparente para camiseta..."
-              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 min-h-[120px] text-gray-900 bg-white resize-none"
+              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 min-h-[120px] text-gray-900 bg-white resize-none placeholder-gray-500"
               disabled={generating || enhancing}
             />
           </div>
 
           {/* Enhance Instructions */}
           <div className="mb-6">
-            <label className="block mb-2 text-gray-600 font-medium text-sm">
+            <label htmlFor="enhance-instructions" className="block mb-2 text-gray-600 font-medium text-sm">
               Instrucciones para mejorar (opcional)
             </label>
             <input
+              id="enhance-instructions"
               type="text"
               value={enhanceInstructions}
               onChange={(e) => setEnhanceInstructions(e.target.value)}
               placeholder="Ej: hazlo más minimalista, añade más detalles, estilo retro..."
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-gray-900 bg-white"
+              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-gray-900 bg-white placeholder-gray-500"
               disabled={generating || enhancing}
             />
           </div>
@@ -236,7 +238,7 @@ export default function DesignGeneratorPage() {
                 </>
               ) : (
                 <>
-                  <Wand2 className="w-5 h-5" />
+                  <Wand2 className="w-5 h-5" aria-hidden="true" />
                   Mejorar Prompt
                 </>
               )}
@@ -254,7 +256,7 @@ export default function DesignGeneratorPage() {
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-5 h-5" />
+                  <Sparkles className="w-5 h-5" aria-hidden="true" />
                   Generar Imagen
                 </>
               )}
@@ -263,7 +265,7 @@ export default function DesignGeneratorPage() {
 
           {/* Generated Image */}
           {generatedImage && (
-            <div className="border-2 border-gray-200 rounded-xl p-6 bg-gray-50">
+            <div className="border-2 border-gray-200 rounded-xl p-6 bg-gray-50" aria-live="polite">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold text-gray-800">Imagen Generada</h3>
                 <div className="flex gap-2">
@@ -271,14 +273,14 @@ export default function DesignGeneratorPage() {
                     onClick={() => handleDownloadImage(generatedImage)}
                     className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4" aria-hidden="true" />
                     Descargar
                   </button>
                   <button
                     onClick={handleNewDesign}
                     className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                   >
-                    <RotateCcw className="w-4 h-4" />
+                    <RotateCcw className="w-4 h-4" aria-hidden="true" />
                     Nuevo
                   </button>
                 </div>
@@ -287,7 +289,7 @@ export default function DesignGeneratorPage() {
               <div className="bg-white rounded-lg p-4 mb-4">
                 <img
                   src={generatedImage}
-                  alt="Generated design"
+                  alt="Diseño generado con IA"
                   className="max-w-full h-auto mx-auto rounded-lg"
                   style={{ maxHeight: '500px' }}
                 />
@@ -295,16 +297,17 @@ export default function DesignGeneratorPage() {
 
               {/* Edit Section */}
               <div className="bg-white rounded-lg p-4">
-                <label className="block mb-2 text-gray-700 font-medium">
+                <label htmlFor="edit-prompt" className="block mb-2 text-gray-700 font-medium">
                   Editar imagen
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="edit-prompt"
                     type="text"
                     value={editPrompt}
                     onChange={(e) => setEditPrompt(e.target.value)}
                     placeholder="Ej: cambia el fondo a azul, añade más brillo..."
-                    className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-gray-900 bg-white"
+                    className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-gray-900 bg-white placeholder-gray-500"
                     disabled={generating}
                   />
                   <button
@@ -329,15 +332,16 @@ export default function DesignGeneratorPage() {
                 <div key={index} className="relative group">
                   <img
                     src={img}
-                    alt={`Design ${index + 1}`}
+                    alt={`Diseño ${index + 1}`}
                     className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setGeneratedImage(img)}
                   />
                   <button
                     onClick={() => handleDownloadImage(img)}
+                    aria-label={`Descargar diseño ${index + 1}`}
                     className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               ))}
@@ -353,7 +357,7 @@ export default function DesignGeneratorPage() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
           >
-            <ExternalLink className="w-4 h-4" />
+            <ExternalLink className="w-4 h-4" aria-hidden="true" />
             Abrir Printful Dashboard para subir diseños
           </a>
         </div>

@@ -116,6 +116,16 @@ export default function SettingsPage() {
   const filteredTextModels = filterModels(textModels, textSearch);
   const filteredImageModels = filterModels(imageModels, imageSearch);
 
+  // Static class maps so Tailwind never purges these (no dynamic template-literal class names)
+  const SELECTED_CARD_CLASSES: Record<'text' | 'image', string> = {
+    text: 'border-purple-500 bg-purple-50',
+    image: 'border-pink-500 bg-pink-50',
+  };
+  const CHECK_COLOR: Record<'text' | 'image', string> = {
+    text: '#a855f7',
+    image: '#ec4899',
+  };
+
   const ModelCard = ({
     model,
     isSelected,
@@ -127,19 +137,13 @@ export default function SettingsPage() {
     onSelect: () => void;
     type: 'text' | 'image';
   }) => {
-    const accentColor = type === 'text' ? 'purple' : 'pink';
-
     return (
       <label
         className={`relative flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
           isSelected
-            ? `border-${accentColor}-500 bg-${accentColor}-50`
+            ? SELECTED_CARD_CLASSES[type]
             : 'border-gray-200 hover:border-gray-300'
         }`}
-        style={{
-          borderColor: isSelected ? (type === 'text' ? '#a855f7' : '#ec4899') : undefined,
-          backgroundColor: isSelected ? (type === 'text' ? '#faf5ff' : '#fdf2f8') : undefined,
-        }}
       >
         <input
           type="radio"
@@ -147,6 +151,7 @@ export default function SettingsPage() {
           value={model.id}
           checked={isSelected}
           onChange={onSelect}
+          aria-label={`Seleccionar modelo ${model.name}`}
           className="sr-only"
         />
         <div className="flex-1 min-w-0">
@@ -166,7 +171,7 @@ export default function SettingsPage() {
           )}
           <div className="flex gap-3 flex-wrap">
             <span className="inline-flex items-center gap-1 text-xs text-gray-500">
-              <Zap className="w-3 h-3" />
+              <Zap className="w-3 h-3" aria-hidden="true" />
               {model.contextLength > 0 ? `${(model.contextLength / 1000).toFixed(0)}K ctx` : 'N/A'}
             </span>
             <span
@@ -176,7 +181,7 @@ export default function SettingsPage() {
                   : 'text-gray-600 bg-gray-100'
               }`}
             >
-              <DollarSign className="w-3 h-3" />
+              <DollarSign className="w-3 h-3" aria-hidden="true" />
               {formatPrice(model.pricing.prompt)}
             </span>
           </div>
@@ -184,7 +189,8 @@ export default function SettingsPage() {
         {isSelected && (
           <Check
             className="w-5 h-5 flex-shrink-0"
-            style={{ color: type === 'text' ? '#a855f7' : '#ec4899' }}
+            style={{ color: CHECK_COLOR[type] }}
+            aria-hidden="true"
           />
         )}
       </label>
@@ -194,8 +200,8 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+        <div className="text-center" role="status" aria-live="polite">
+          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" aria-hidden="true" />
           <p className="text-gray-600">Cargando modelos de OpenRouter...</p>
         </div>
       </div>
@@ -213,7 +219,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                <Settings className="w-8 h-8 text-gray-700" />
+                <Settings className="w-8 h-8 text-gray-700" aria-hidden="true" />
                 Configuración
               </h1>
               <p className="text-gray-600 mt-2">
@@ -225,27 +231,31 @@ export default function SettingsPage() {
               disabled={loading}
               className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               Actualizar
             </button>
           </div>
           {lastUpdated && (
-            <p className="text-xs text-gray-400 mt-2">
+            <p className="text-xs text-gray-600 mt-2">
               Última actualización: {new Date(lastUpdated).toLocaleString()}
             </p>
           )}
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+          <div
+            role="alert"
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"
+          >
             {error}
           </div>
         )}
 
         {/* Filter Options */}
         <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label htmlFor="show-free-only" className="flex items-center gap-2 cursor-pointer">
             <input
+              id="show-free-only"
               type="checkbox"
               checked={showFreeOnly}
               onChange={(e) => setShowFreeOnly(e.target.checked)}
@@ -260,7 +270,7 @@ export default function SettingsPage() {
         {/* Text Model Selection */}
         <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-600" />
+            <Brain className="w-6 h-6 text-purple-600" aria-hidden="true" />
             Modelo de Texto
             <span className="text-sm font-normal text-gray-500">
               ({filteredTextModels.length} modelos)
@@ -272,20 +282,25 @@ export default function SettingsPage() {
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <label htmlFor="text-model-search" className="sr-only">
+              Buscar modelo de texto
+            </label>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
             <input
+              id="text-model-search"
               type="text"
               value={textSearch}
               onChange={(e) => setTextSearch(e.target.value)}
               placeholder="Buscar modelo..."
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
             />
             {textSearch && (
               <button
                 onClick={() => setTextSearch('')}
+                aria-label="Limpiar búsqueda"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -319,7 +334,7 @@ export default function SettingsPage() {
         {/* Image Model Selection */}
         <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <ImageIcon className="w-6 h-6 text-pink-600" />
+            <ImageIcon className="w-6 h-6 text-pink-600" aria-hidden="true" />
             Modelo de Imagen
             <span className="text-sm font-normal text-gray-500">
               ({filteredImageModels.length} modelos)
@@ -331,20 +346,25 @@ export default function SettingsPage() {
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <label htmlFor="image-model-search" className="sr-only">
+              Buscar modelo de imagen
+            </label>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
             <input
+              id="image-model-search"
               type="text"
               value={imageSearch}
               onChange={(e) => setImageSearch(e.target.value)}
               placeholder="Buscar modelo..."
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
             />
             {imageSearch && (
               <button
                 onClick={() => setImageSearch('')}
+                aria-label="Limpiar búsqueda"
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -389,7 +409,7 @@ export default function SettingsPage() {
           >
             {saved ? (
               <>
-                <Check className="w-5 h-5" />
+                <Check className="w-5 h-5" aria-hidden="true" />
                 Guardado
               </>
             ) : (

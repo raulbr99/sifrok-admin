@@ -201,8 +201,8 @@ export default function MultiDesignPage() {
   if (status === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
+        <div className="text-center" role="status" aria-live="polite">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
           <p className="text-gray-600">Cargando...</p>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function MultiDesignPage() {
           href="/admin"
           className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 mb-6 font-bold"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           Volver al Admin
         </Link>
 
@@ -233,16 +233,17 @@ export default function MultiDesignPage() {
 
         <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl shadow-lg p-8 border-4 border-purple-300 mb-8">
           <h2 className="text-3xl font-black mb-6 text-purple-600 flex items-center gap-2">
-            <Sparkles className="w-8 h-8" />
+            <Sparkles className="w-8 h-8" aria-hidden="true" />
             Configuración
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block mb-2 text-gray-700 font-bold">
+              <label htmlFor="product-type" className="block mb-2 text-gray-700 font-bold">
                 Tipo de Producto
               </label>
               <select
+                id="product-type"
                 value={productType}
                 onChange={(e) => setProductType(e.target.value as keyof typeof PRODUCT_TYPES)}
                 className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 font-semibold"
@@ -257,10 +258,11 @@ export default function MultiDesignPage() {
             </div>
 
             <div>
-              <label className="block mb-2 text-gray-700 font-bold">
+              <label htmlFor="image-model" className="block mb-2 text-gray-700 font-bold">
                 Modelo de IA
               </label>
               <select
+                id="image-model"
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value as ImageGenModel)}
                 className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 font-semibold"
@@ -289,15 +291,15 @@ export default function MultiDesignPage() {
                 </h3>
                 <div className="grid grid-cols-3 gap-2 text-xs">
                   <div className="flex items-center gap-1 text-indigo-700">
-                    <Zap className="w-3 h-3" />
+                    <Zap className="w-3 h-3" aria-hidden="true" />
                     <span>{IMAGE_GENERATION_MODELS[selectedModel].speed}</span>
                   </div>
                   <div className="flex items-center gap-1 text-indigo-700">
-                    <Award className="w-3 h-3" />
+                    <Award className="w-3 h-3" aria-hidden="true" />
                     <span>Calidad: {IMAGE_GENERATION_MODELS[selectedModel].quality}</span>
                   </div>
                   <div className="flex items-center gap-1 text-indigo-700">
-                    <DollarSign className="w-3 h-3" />
+                    <DollarSign className="w-3 h-3" aria-hidden="true" />
                     <span>Costo: {IMAGE_GENERATION_MODELS[selectedModel].cost}</span>
                   </div>
                 </div>
@@ -334,14 +336,15 @@ export default function MultiDesignPage() {
           </div>
 
           <div className="mb-6">
-            <label className="block mb-2 text-gray-700 font-bold">
+            <label htmlFor="design-prompt" className="block mb-2 text-gray-700 font-bold">
               Describe tu diseño
             </label>
             <textarea
+              id="design-prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ej: Un gato espacial con colores neón y estilo retro"
-              className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 min-h-[100px]"
+              className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 min-h-[100px] placeholder-gray-500"
               disabled={generating || enhancing}
             />
             <p className="text-sm text-gray-600 mt-2">
@@ -351,24 +354,26 @@ export default function MultiDesignPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div>
-              <label className="block mb-2 text-gray-700 font-bold text-sm">
+              <label htmlFor="enhance-instructions" className="block mb-2 text-gray-700 font-bold text-sm">
                 ¿Qué mejorar del prompt? (opcional)
               </label>
               <input
+                id="enhance-instructions"
                 type="text"
                 value={enhanceInstructions}
                 onChange={(e) => setEnhanceInstructions(e.target.value)}
                 placeholder="Ej: hazlo más minimalista, añade más detalles, estilo vintage..."
-                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 text-sm"
+                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 text-sm placeholder-gray-500"
                 disabled={generating || enhancing}
               />
             </div>
 
             <div>
-              <label className="block mb-2 text-gray-700 font-bold text-sm">
+              <label htmlFor="text-model" className="block mb-2 text-gray-700 font-bold text-sm">
                 Modelo de Texto para Mejorar
               </label>
               <select
+                id="text-model"
                 value={selectedTextModel}
                 onChange={(e) => setSelectedTextModel(e.target.value as TextGenModel)}
                 className="w-full p-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 text-sm font-semibold"
@@ -386,7 +391,7 @@ export default function MultiDesignPage() {
           {/* Info del modelo de texto */}
           <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-3">
             <div className="flex items-center gap-2 text-xs">
-              <Brain className="w-4 h-4 text-blue-700" />
+              <Brain className="w-4 h-4 text-blue-700" aria-hidden="true" />
               <div className="flex-1">
                 <span className="font-bold text-blue-900">{TEXT_GENERATION_MODELS[selectedTextModel].name}:</span>
                 <span className="text-blue-700 ml-2">
@@ -395,11 +400,11 @@ export default function MultiDesignPage() {
               </div>
               <div className="flex gap-3 text-blue-600">
                 <span className="flex items-center gap-1">
-                  <Zap className="w-3 h-3" />
+                  <Zap className="w-3 h-3" aria-hidden="true" />
                   {TEXT_GENERATION_MODELS[selectedTextModel].speed}
                 </span>
                 <span className="flex items-center gap-1">
-                  <DollarSign className="w-3 h-3" />
+                  <DollarSign className="w-3 h-3" aria-hidden="true" />
                   {TEXT_GENERATION_MODELS[selectedTextModel].cost}
                 </span>
               </div>
@@ -408,13 +413,15 @@ export default function MultiDesignPage() {
 
           <div className="grid grid-cols-2 gap-4 mb-4">
             <button
+              type="button"
               onClick={handleEnhancePrompt}
               disabled={enhancing || generating || !prompt.trim()}
+              aria-label="Mejorar prompt"
               className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-full font-bold text-lg hover:from-blue-600 hover:to-cyan-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {enhancing ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" aria-hidden="true"></div>
                   Mejorando...
                 </span>
               ) : (
@@ -423,13 +430,15 @@ export default function MultiDesignPage() {
             </button>
 
             <button
+              type="button"
               onClick={handleGenerate}
               disabled={generating || enhancing || !prompt.trim()}
+              aria-label="Generar diseños"
               className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-full font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {generating ? (
                 <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" aria-hidden="true"></div>
                   Generando...
                 </span>
               ) : (
@@ -470,18 +479,22 @@ export default function MultiDesignPage() {
                     <div className="flex gap-2">
                       {IMAGE_GENERATION_MODELS[selectedModel].supportsImageInput && (
                         <button
+                          type="button"
                           onClick={() => setEditingArea(editingArea === design.area ? null : design.area)}
                           className="bg-orange-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center gap-2"
                           disabled={generating}
+                          aria-label={`Editar diseño de ${design.label}`}
                         >
                           ✏️ Editar
                         </button>
                       )}
                       <button
+                        type="button"
                         onClick={() => handleDownload(design.imageUrl, design.area)}
                         className="bg-blue-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all flex items-center gap-2"
+                        aria-label={`Descargar diseño de ${design.label}`}
                       >
-                        <Download className="w-4 h-4" />
+                        <Download className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -489,29 +502,32 @@ export default function MultiDesignPage() {
                   <div className="bg-white rounded-lg p-4 mb-3">
                     <img
                       src={design.imageUrl}
-                      alt={design.label}
+                      alt={`Diseño generado para ${design.label}`}
                       className="w-full h-auto rounded"
                     />
                   </div>
 
                   {editingArea === design.area && (
                     <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg p-4 mb-3">
-                      <label className="block mb-2 text-sm font-bold text-orange-900">
+                      <label htmlFor={`edit-instructions-${design.area}`} className="block mb-2 text-sm font-bold text-orange-900">
                         ¿Qué quieres cambiar?
                       </label>
                       <div className="flex gap-2">
                         <input
+                          id={`edit-instructions-${design.area}`}
                           type="text"
                           value={editInstructions}
                           onChange={(e) => setEditInstructions(e.target.value)}
                           placeholder="Ej: cambia el color a azul, añade más detalles..."
-                          className="flex-1 p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm"
+                          className="flex-1 p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm placeholder-gray-500"
                           disabled={generating}
                         />
                         <button
+                          type="button"
                           onClick={() => handleEditDesign(design.area)}
                           disabled={generating || !editInstructions.trim()}
                           className="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                          aria-label={`Aplicar cambios al diseño de ${design.label}`}
                         >
                           {generating ? '...' : '🔄 Aplicar'}
                         </button>
@@ -530,11 +546,12 @@ export default function MultiDesignPage() {
             </div>
 
             <button
+              type="button"
               onClick={handleDownloadAll}
               className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-full font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg"
             >
               <span className="flex items-center justify-center gap-2">
-                <Download className="w-5 h-5" />
+                <Download className="w-5 h-5" aria-hidden="true" />
                 Descargar Todos los Diseños
               </span>
             </button>

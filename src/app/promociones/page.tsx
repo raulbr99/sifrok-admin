@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Tag, Calendar, TrendingUp } from 'lucide-react';
+import Modal from '@/components/ui/Modal';
 
 interface Promotion {
   id: string;
@@ -179,7 +180,7 @@ export default function PromocionesAdminPage() {
             }}
             className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-5 h-5" aria-hidden="true" />
             Nueva Promoción
           </button>
         </div>
@@ -198,7 +199,7 @@ export default function PromocionesAdminPage() {
                   <h3 className="text-xl font-black text-gray-800">{promo.name}</h3>
                   {promo.code && (
                     <div className="flex items-center gap-1 mt-2">
-                      <Tag className="w-4 h-4 text-purple-600" />
+                      <Tag className="w-4 h-4 text-purple-600" aria-hidden="true" />
                       <span className="font-mono font-bold text-purple-600">{promo.code}</span>
                     </div>
                   )}
@@ -228,7 +229,7 @@ export default function PromocionesAdminPage() {
                 )}
                 {promo.startDate && (
                   <p className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
+                    <Calendar className="w-3 h-3" aria-hidden="true" />
                     {new Date(promo.startDate).toLocaleDateString('es-ES')}
                     {promo.endDate && ` - ${new Date(promo.endDate).toLocaleDateString('es-ES')}`}
                   </p>
@@ -240,14 +241,15 @@ export default function PromocionesAdminPage() {
                   onClick={() => handleEdit(promo)}
                   className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-full font-bold hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
                 >
-                  <Edit className="w-4 h-4" />
+                  <Edit className="w-4 h-4" aria-hidden="true" />
                   Editar
                 </button>
                 <button
                   onClick={() => handleDelete(promo.id)}
+                  aria-label="Eliminar"
                   className="bg-red-500 text-white px-4 py-2 rounded-full font-bold hover:bg-red-600 transition-all flex items-center justify-center"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </button>
               </div>
             </div>
@@ -256,175 +258,184 @@ export default function PromocionesAdminPage() {
 
         {promotions.length === 0 && !loading && (
           <div className="text-center py-16">
-            <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <TrendingUp className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
             <p className="text-xl text-gray-500 font-bold">
               No hay promociones creadas
             </p>
-            <p className="text-gray-400 mt-2">
+            <p className="text-gray-600 mt-2">
               Crea tu primera promoción para atraer clientes
             </p>
           </div>
         )}
 
         {/* Modal de crear/editar */}
-        {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-8">
-              <h2 className="text-3xl font-black mb-6 text-purple-600">
-                {editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
-              </h2>
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block mb-2 font-bold text-gray-700">
-                    Nombre de la promoción *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Black Friday 2024"
-                    className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block mb-2 font-bold text-gray-700">
-                    Código promocional (opcional)
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                    placeholder="VERANO20"
-                    className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500 uppercase"
-                  />
-                  <p className="text-sm text-gray-600 mt-1">
-                    Deja vacío para descuento automático sin código
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Tipo de descuento *
-                    </label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    >
-                      <option value="PERCENTAGE">Porcentaje (%)</option>
-                      <option value="FIXED_AMOUNT">Cantidad fija (€)</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Valor *
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.value}
-                      onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                      placeholder={formData.type === 'PERCENTAGE' ? '20' : '5.00'}
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Fecha inicio (opcional)
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.startDate}
-                      onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Fecha fin (opcional)
-                    </label>
-                    <input
-                      type="date"
-                      value={formData.endDate}
-                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Compra mínima (€)
-                    </label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      value={formData.minAmount}
-                      onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
-                      placeholder="50.00"
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block mb-2 font-bold text-gray-700">
-                      Máximo de usos
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.maxUses}
-                      onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
-                      placeholder="100"
-                      className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={formData.isActive}
-                      onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                      className="w-5 h-5"
-                    />
-                    <span className="font-bold text-gray-700">Promoción activa</span>
-                  </label>
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowModal(false);
-                      resetForm();
-                    }}
-                    className="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-full font-bold hover:bg-gray-400 transition-all"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
-                  >
-                    {editingPromotion ? 'Actualizar' : 'Crear'}
-                  </button>
-                </div>
-              </form>
+        <Modal
+          open={showModal}
+          onClose={() => {
+            setShowModal(false);
+            resetForm();
+          }}
+          title={editingPromotion ? 'Editar Promoción' : 'Nueva Promoción'}
+          size="lg"
+        >
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="promo-name" className="block mb-2 font-bold text-gray-700">
+                Nombre de la promoción *
+              </label>
+              <input
+                id="promo-name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Black Friday 2024"
+                className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                required
+              />
             </div>
-          </div>
-        )}
+
+            <div>
+              <label htmlFor="promo-code" className="block mb-2 font-bold text-gray-700">
+                Código promocional (opcional)
+              </label>
+              <input
+                id="promo-code"
+                type="text"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                placeholder="VERANO20"
+                className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500 uppercase"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Deja vacío para descuento automático sin código
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="promo-type" className="block mb-2 font-bold text-gray-700">
+                  Tipo de descuento *
+                </label>
+                <select
+                  id="promo-type"
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                >
+                  <option value="PERCENTAGE">Porcentaje (%)</option>
+                  <option value="FIXED_AMOUNT">Cantidad fija (€)</option>
+                </select>
+              </div>
+
+              <div>
+                <label htmlFor="promo-value" className="block mb-2 font-bold text-gray-700">
+                  Valor *
+                </label>
+                <input
+                  id="promo-value"
+                  type="number"
+                  step="0.01"
+                  value={formData.value}
+                  onChange={(e) => setFormData({ ...formData, value: e.target.value })}
+                  placeholder={formData.type === 'PERCENTAGE' ? '20' : '5.00'}
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="promo-start-date" className="block mb-2 font-bold text-gray-700">
+                  Fecha inicio (opcional)
+                </label>
+                <input
+                  id="promo-start-date"
+                  type="date"
+                  value={formData.startDate}
+                  onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="promo-end-date" className="block mb-2 font-bold text-gray-700">
+                  Fecha fin (opcional)
+                </label>
+                <input
+                  id="promo-end-date"
+                  type="date"
+                  value={formData.endDate}
+                  onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="promo-min-amount" className="block mb-2 font-bold text-gray-700">
+                  Compra mínima (€)
+                </label>
+                <input
+                  id="promo-min-amount"
+                  type="number"
+                  step="0.01"
+                  value={formData.minAmount}
+                  onChange={(e) => setFormData({ ...formData, minAmount: e.target.value })}
+                  placeholder="50.00"
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="promo-max-uses" className="block mb-2 font-bold text-gray-700">
+                  Máximo de usos
+                </label>
+                <input
+                  id="promo-max-uses"
+                  type="number"
+                  value={formData.maxUses}
+                  onChange={(e) => setFormData({ ...formData, maxUses: e.target.value })}
+                  placeholder="100"
+                  className="w-full p-3 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-500"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="promo-active" className="flex items-center gap-2 cursor-pointer">
+                <input
+                  id="promo-active"
+                  type="checkbox"
+                  checked={formData.isActive}
+                  onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                  className="w-5 h-5"
+                />
+                <span className="font-bold text-gray-700">Promoción activa</span>
+              </label>
+            </div>
+
+            <div className="flex gap-4 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowModal(false);
+                  resetForm();
+                }}
+                className="flex-1 bg-gray-300 text-gray-700 px-6 py-3 rounded-full font-bold hover:bg-gray-400 transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-bold hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
+              >
+                {editingPromotion ? 'Actualizar' : 'Crear'}
+              </button>
+            </div>
+          </form>
+        </Modal>
       </div>
     </div>
   );

@@ -63,13 +63,17 @@ export default function ProfitabilityPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-purple-600" />
+            <TrendingUp className="w-8 h-8 text-purple-600" aria-hidden="true" />
             Rentabilidad
           </h1>
-          <p className="text-gray-500 mt-1">Analiza ingresos, costes y margenes de beneficio</p>
+          <p className="text-gray-600 mt-1">Analiza ingresos, costes y margenes de beneficio</p>
         </div>
         <div className="flex items-center gap-4">
+          <label htmlFor="period-select" className="sr-only">
+            Periodo
+          </label>
           <select
+            id="period-select"
             value={period}
             onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
@@ -83,63 +87,64 @@ export default function ProfitabilityPage() {
             disabled={loading}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
           >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
             Actualizar
           </button>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <RefreshCw className="w-8 h-8 animate-spin text-purple-600" />
+        <div className="flex items-center justify-center py-20" role="status" aria-live="polite">
+          <RefreshCw className="w-8 h-8 animate-spin text-purple-600" aria-hidden="true" />
+          <span className="sr-only">Cargando estadisticas...</span>
         </div>
       ) : stats ? (
-        <div className="space-y-8">
+        <div className="space-y-8" aria-live="polite">
           {/* Main Stats */}
           <div className="grid grid-cols-4 gap-6">
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-blue-600" />
+                  <DollarSign className="w-6 h-6 text-blue-600" aria-hidden="true" />
                 </div>
                 <span className="text-sm text-gray-600">Ingresos Totales</span>
               </div>
               <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-sm text-gray-500 mt-2">{periodLabels[period]}</p>
+              <p className="text-sm text-gray-600 mt-2">{periodLabels[period]}</p>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-orange-600" />
+                  <Package className="w-6 h-6 text-orange-600" aria-hidden="true" />
                 </div>
                 <span className="text-sm text-gray-600">Costes Produccion</span>
               </div>
               <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalCosts)}</p>
-              <p className="text-sm text-gray-500 mt-2">Printful</p>
+              <p className="text-sm text-gray-600 mt-2">Printful</p>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-purple-600" />
+                  <CreditCard className="w-6 h-6 text-purple-600" aria-hidden="true" />
                 </div>
                 <span className="text-sm text-gray-600">Comisiones Stripe</span>
               </div>
               <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalFees)}</p>
-              <p className="text-sm text-gray-500 mt-2">2.9% + 0.30 EUR</p>
+              <p className="text-sm text-gray-600 mt-2">2.9% + 0.30 EUR</p>
             </div>
 
             <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6" />
+                  <TrendingUp className="w-6 h-6" aria-hidden="true" />
                 </div>
                 <span className="text-sm opacity-80">Beneficio Neto</span>
               </div>
               <p className="text-3xl font-bold">{formatCurrency(stats.netProfit)}</p>
               <div className="flex items-center gap-2 mt-2">
-                <Percent className="w-4 h-4" />
+                <Percent className="w-4 h-4" aria-hidden="true" />
                 <span className="text-sm">Margen: {stats.margin.toFixed(1)}%</span>
               </div>
             </div>
@@ -154,7 +159,7 @@ export default function ProfitabilityPage() {
                   <p className="text-2xl font-bold text-gray-900">{stats.orderCount}</p>
                 </div>
                 <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-gray-600" />
+                  <Package className="w-6 h-6 text-gray-600" aria-hidden="true" />
                 </div>
               </div>
             </div>
@@ -166,7 +171,7 @@ export default function ProfitabilityPage() {
                   <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.avgOrderValue)}</p>
                 </div>
                 <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-gray-600" />
+                  <DollarSign className="w-6 h-6 text-gray-600" aria-hidden="true" />
                 </div>
               </div>
             </div>
@@ -181,9 +186,9 @@ export default function ProfitabilityPage() {
                 </div>
                 <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${stats.avgProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
                   {stats.avgProfit >= 0 ? (
-                    <ArrowUp className="w-6 h-6 text-green-600" />
+                    <ArrowUp className="w-6 h-6 text-green-600" aria-hidden="true" />
                   ) : (
-                    <ArrowDown className="w-6 h-6 text-red-600" />
+                    <ArrowDown className="w-6 h-6 text-red-600" aria-hidden="true" />
                   )}
                 </div>
               </div>
@@ -269,7 +274,7 @@ export default function ProfitabilityPage() {
           </div>
         </div>
       ) : (
-        <div className="text-center py-20 text-gray-500">No se pudieron cargar las estadisticas</div>
+        <div className="text-center py-20 text-gray-600" role="alert">No se pudieron cargar las estadisticas</div>
       )}
     </div>
   )

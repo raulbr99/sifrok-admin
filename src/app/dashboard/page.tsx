@@ -121,7 +121,7 @@ export default function AdminDashboard() {
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center" role="alert">
           <p className="text-red-600 mb-4">{error}</p>
           <button
             onClick={fetchStats}
@@ -155,14 +155,14 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" />
+                <DollarSign className="w-6 h-6 text-green-600" aria-hidden="true" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
               {stats.thisMonth.revenueChange >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                <TrendingUp className="w-4 h-4 text-green-500 mr-1" aria-hidden="true" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                <TrendingDown className="w-4 h-4 text-red-500 mr-1" aria-hidden="true" />
               )}
               <span
                 className={
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
                 {stats.thisMonth.revenueChange >= 0 ? '+' : ''}
                 {stats.thisMonth.revenueChange}%
               </span>
-              <span className="text-gray-500 ml-2">vs mes anterior</span>
+              <span className="text-gray-600 ml-2">vs mes anterior</span>
             </div>
           </div>
 
@@ -187,14 +187,14 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-purple-600" />
+                <ShoppingBag className="w-6 h-6 text-purple-600" aria-hidden="true" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
               {stats.thisMonth.ordersChange >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
+                <TrendingUp className="w-4 h-4 text-green-500 mr-1" aria-hidden="true" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" />
+                <TrendingDown className="w-4 h-4 text-red-500 mr-1" aria-hidden="true" />
               )}
               <span
                 className={
@@ -206,7 +206,7 @@ export default function AdminDashboard() {
                 {stats.thisMonth.ordersChange >= 0 ? '+' : ''}
                 {stats.thisMonth.ordersChange}%
               </span>
-              <span className="text-gray-500 ml-2">vs mes anterior</span>
+              <span className="text-gray-600 ml-2">vs mes anterior</span>
             </div>
           </div>
 
@@ -219,10 +219,10 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
+                <Users className="w-6 h-6 text-blue-600" aria-hidden="true" />
               </div>
             </div>
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-gray-600">
               +{stats.thisMonth.newUsers} este mes
             </div>
           </div>
@@ -236,10 +236,10 @@ export default function AdminDashboard() {
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Package className="w-6 h-6 text-orange-600" />
+                <Package className="w-6 h-6 text-orange-600" aria-hidden="true" />
               </div>
             </div>
-            <div className="mt-4 text-sm text-gray-500">
+            <div className="mt-4 text-sm text-gray-600">
               Requieren atención
             </div>
           </div>
@@ -248,7 +248,7 @@ export default function AdminDashboard() {
         {/* Today stats */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-sm p-6 mb-8 text-white">
           <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
-            <Clock className="w-5 h-5" />
+            <Clock className="w-5 h-5" aria-hidden="true" />
             Hoy
           </h2>
           <div className="grid grid-cols-3 gap-6">
@@ -286,7 +286,7 @@ export default function AdminDashboard() {
                       <p className="font-medium text-gray-900 truncate">
                         {product.name}
                       </p>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-600">
                         {product.quantity} unidades en {product.orders} pedidos
                       </p>
                     </div>
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No hay datos aún</p>
+              <p className="text-gray-600">No hay datos aún</p>
             )}
           </div>
 
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
                       <p className="font-medium text-gray-900">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </p>
-                      <p className="text-sm text-gray-500">{order.customer}</p>
+                      <p className="text-sm text-gray-600">{order.customer}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-medium">{formatCurrency(order.total)}</p>
@@ -330,7 +330,7 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-500">No hay pedidos aún</p>
+              <p className="text-gray-600">No hay pedidos aún</p>
             )}
           </div>
         </div>

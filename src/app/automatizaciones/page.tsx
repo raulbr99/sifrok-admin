@@ -105,7 +105,7 @@ export default function BatchGeneratorPage() {
             ← Volver al Generador
           </Link>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <Layers className="w-8 h-8 text-purple-600" />
+            <Layers className="w-8 h-8 text-purple-600" aria-hidden="true" />
             Generación Batch
           </h1>
           <p className="text-gray-600 mt-2">
@@ -117,7 +117,7 @@ export default function BatchGeneratorPage() {
           {/* Form */}
           <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6">
             <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" />
+              <Sparkles className="w-5 h-5 text-purple-600" aria-hidden="true" />
               Prompts
             </h2>
             <p className="text-gray-600 text-sm mb-6">
@@ -126,15 +126,19 @@ export default function BatchGeneratorPage() {
 
             <form onSubmit={handleBatchSubmit} className="space-y-4">
               <div>
+                <label htmlFor="batch-prompts" className="sr-only">
+                  Prompts, uno por línea
+                </label>
                 <textarea
+                  id="batch-prompts"
                   value={customPrompts}
                   onChange={(e) => setCustomPrompts(e.target.value)}
                   rows={10}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none font-mono text-sm text-gray-900 bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none font-mono text-sm text-gray-900 bg-white placeholder-gray-500"
                   placeholder="minimalist cat design for t-shirt&#10;geometric wolf illustration&#10;abstract mountain art&#10;cyberpunk astronaut"
                   disabled={batchLoading}
                 />
-                <p className="text-xs text-gray-500 mt-2">
+                <p className="text-xs text-gray-500 mt-2" aria-live="polite">
                   {customPrompts.split('\n').filter(p => p.trim()).length} prompts
                 </p>
               </div>
@@ -146,12 +150,12 @@ export default function BatchGeneratorPage() {
               >
                 {batchLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                     Generando... ({batchResults.length}/{customPrompts.split('\n').filter(p => p.trim()).length})
                   </>
                 ) : (
                   <>
-                    <Layers className="w-5 h-5" />
+                    <Layers className="w-5 h-5" aria-hidden="true" />
                     Generar Todos
                   </>
                 )}
@@ -178,22 +182,23 @@ export default function BatchGeneratorPage() {
                   onClick={handleDownloadAll}
                   className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-4 h-4" aria-hidden="true" />
                   Descargar Todos
                 </button>
               )}
             </div>
 
+            <div aria-live="polite">
             {batchResults.length === 0 && !batchLoading && (
-              <div className="text-center py-12 text-gray-400">
-                <Layers className="w-16 h-16 mx-auto mb-4 opacity-50" />
+              <div className="text-center py-12 text-gray-600">
+                <Layers className="w-16 h-16 mx-auto mb-4 opacity-50 text-gray-400" aria-hidden="true" />
                 <p>Los diseños generados aparecerán aquí</p>
               </div>
             )}
 
             {batchLoading && batchResults.length === 0 && (
               <div className="text-center py-12">
-                <Loader2 className="w-16 h-16 mx-auto mb-4 text-purple-600 animate-spin" />
+                <Loader2 className="w-16 h-16 mx-auto mb-4 text-purple-600 animate-spin" aria-hidden="true" />
                 <p className="text-gray-600">Iniciando generación...</p>
               </div>
             )}
@@ -201,7 +206,7 @@ export default function BatchGeneratorPage() {
             {batchResults.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-green-600 mb-4">
-                  <CheckCircle className="w-5 h-5" />
+                  <CheckCircle className="w-5 h-5" aria-hidden="true" />
                   <span className="font-bold">
                     {batchResults.filter(r => r.success).length} de {batchResults.length} diseños completados
                   </span>
@@ -219,22 +224,23 @@ export default function BatchGeneratorPage() {
                         <>
                           <img
                             src={result.imageUrl}
-                            alt={`Diseño ${result.index}`}
+                            alt={`Diseño generado ${result.index}: ${result.prompt}`}
                             className="w-full h-full object-contain"
                           />
                           <button
                             onClick={() => handleDownloadImage(result.imageUrl, result.index)}
+                            aria-label={`Descargar diseño ${result.index}`}
                             className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
                           >
-                            <Download className="w-4 h-4" />
+                            <Download className="w-4 h-4" aria-hidden="true" />
                           </button>
                         </>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           {batchLoading && result.index === batchResults.length ? (
-                            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+                            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" aria-hidden="true" />
                           ) : (
-                            <XCircle className="w-8 h-8 text-red-500" />
+                            <XCircle className="w-8 h-8 text-red-500" aria-hidden="true" />
                           )}
                         </div>
                       )}
@@ -246,6 +252,7 @@ export default function BatchGeneratorPage() {
                 </div>
               </div>
             )}
+            </div>
 
             {/* Link to Printful */}
             {batchResults.filter(r => r.success).length > 0 && (
@@ -256,7 +263,7 @@ export default function BatchGeneratorPage() {
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
                 >
-                  <ExternalLink className="w-4 h-4" />
+                  <ExternalLink className="w-4 h-4" aria-hidden="true" />
                   Subir diseños a Printful Dashboard
                 </a>
               </div>

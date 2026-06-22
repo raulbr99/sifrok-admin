@@ -167,11 +167,12 @@ export default function OrdersPage() {
         accessorKey: 'total',
         header: ({ column }) => (
           <button
+            type="button"
             className="flex items-center gap-1"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Total
-            <ArrowUpDown className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
           </button>
         ),
         cell: ({ row }) => (
@@ -200,7 +201,7 @@ export default function OrdersPage() {
           <div className="flex flex-col gap-1">
             <span
               className={`w-fit px-2 py-1 rounded-full text-xs font-medium ${
-                printfulStatusColors[row.original.printfulStatus || ''] || 'bg-gray-100 text-gray-500'
+                printfulStatusColors[row.original.printfulStatus || ''] || 'bg-gray-100 text-gray-700'
               }`}
             >
               {row.original.printfulStatus || 'No enviado'}
@@ -224,7 +225,7 @@ export default function OrdersPage() {
               </span>
             )}
             {row.original.shippedAt && (
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-600">
                 Enviado {row.original.shippedAt.toLocaleDateString('es-ES', {
                   day: '2-digit',
                   month: 'short',
@@ -238,17 +239,18 @@ export default function OrdersPage() {
         accessorKey: 'netProfit',
         header: ({ column }) => (
           <button
+            type="button"
             className="flex items-center gap-1"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Profit
-            <ArrowUpDown className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
           </button>
         ),
         cell: ({ row }) => {
           const profit = row.original.netProfit
           if (profit === null) {
-            return <span className="text-gray-400 text-xs">Sin calcular</span>
+            return <span className="text-gray-600 text-xs">Sin calcular</span>
           }
           return (
             <span className={`font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -261,11 +263,12 @@ export default function OrdersPage() {
         accessorKey: 'createdAt',
         header: ({ column }) => (
           <button
+            type="button"
             className="flex items-center gap-1"
             onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
           >
             Fecha
-            <ArrowUpDown className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4" aria-hidden="true" />
           </button>
         ),
         cell: ({ row }) => (
@@ -284,31 +287,37 @@ export default function OrdersPage() {
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
             <button
+              type="button"
               onClick={() => handleCalculateProfit(row.original.id)}
               disabled={processingId === row.original.id}
               className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded"
               title="Calcular profit"
+              aria-label="Calcular profit"
             >
-              <DollarSign className="w-4 h-4" />
+              <DollarSign className="w-4 h-4" aria-hidden="true" />
             </button>
             {row.original.printfulOrderId && (
               <button
+                type="button"
                 onClick={() => handleSyncPrintful(row.original.id)}
                 disabled={processingId === row.original.id}
                 className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
                 title="Sincronizar Printful"
+                aria-label="Sincronizar Printful"
               >
-                <Truck className="w-4 h-4" />
+                <Truck className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
             {row.original.status !== 'CANCELLED' && row.original.stripePaymentId && (
               <button
+                type="button"
                 onClick={() => handleRefund(row.original.id)}
                 disabled={processingId === row.original.id}
                 className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
                 title="Reembolsar"
+                aria-label="Reembolsar"
               >
-                <XCircle className="w-4 h-4" />
+                <XCircle className="w-4 h-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -338,17 +347,18 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Package className="w-8 h-8 text-purple-600" />
+            <Package className="w-8 h-8 text-purple-600" aria-hidden="true" />
             Pedidos
           </h1>
           <p className="text-gray-500 mt-1">Gestiona pedidos, estados y reembolsos</p>
         </div>
         <button
+          type="button"
           onClick={loadOrders}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
         >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
           Actualizar
         </button>
       </div>
@@ -356,8 +366,15 @@ export default function OrdersPage() {
       {/* Search */}
       <div className="mb-6">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <label htmlFor="orders-search" className="sr-only">
+            Buscar pedidos
+          </label>
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            aria-hidden="true"
+          />
           <input
+            id="orders-search"
             type="text"
             placeholder="Buscar por ID, email o nombre..."
             value={searchTerm}
@@ -374,16 +391,27 @@ export default function OrdersPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
-                    </th>
-                  ))}
+                  {headerGroup.headers.map((header) => {
+                    const sorted = header.column.getIsSorted()
+                    const ariaSort = header.column.getCanSort()
+                      ? sorted === 'asc'
+                        ? 'ascending'
+                        : sorted === 'desc'
+                        ? 'descending'
+                        : 'none'
+                      : undefined
+                    return (
+                      <th
+                        key={header.id}
+                        aria-sort={ariaSort}
+                        className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())}
+                      </th>
+                    )
+                  })}
                 </tr>
               ))}
             </thead>
@@ -427,21 +455,25 @@ export default function OrdersPage() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
               className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50"
+              aria-label="Pagina anterior"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
             </button>
             <span className="text-sm text-gray-600">
               Pagina {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
             </span>
             <button
+              type="button"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
               className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50"
+              aria-label="Pagina siguiente"
             >
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>

@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { validateImageForPrint, getValidationRequirements } from '@/actions/studio';
+import Modal from '@/components/ui/Modal';
 
 // Garment types with their placement areas
 const GARMENT_TYPES = [
@@ -521,7 +522,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 ← Volver
               </Link>
               <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-                <Shirt className="w-6 h-6 text-purple-600" />
+                <Shirt className="w-6 h-6 text-purple-600" aria-hidden="true" />
                 Design Studio
               </h1>
             </div>
@@ -538,12 +539,12 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               >
                 {isValidating ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     Validando...
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
+                    <Save className="w-4 h-4" aria-hidden="true" />
                     Guardar Coleccion
                   </>
                 )}
@@ -560,7 +561,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             {/* Left: Garment Selection */}
             <div>
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">1</span>
+                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm" aria-hidden="true">1</span>
                 Selecciona el Producto
               </h2>
               <div className="grid grid-cols-5 gap-2">
@@ -586,19 +587,25 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
 
             {/* Right: Design Prompt */}
             <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">2</span>
+              <h2 id="design-prompt-heading" className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm" aria-hidden="true">2</span>
                 Describe tu Diseño
               </h2>
+              <label htmlFor="design-prompt" className="sr-only">
+                Descripción del diseño
+              </label>
               <textarea
+                id="design-prompt"
                 value={designPrompt}
                 onChange={(e) => setDesignPrompt(e.target.value)}
                 placeholder="Describe el tema de tu diseño... Ej: Estilo japonés minimalista con olas y monte Fuji, colores azul y blanco"
-                className="w-full p-4 border-2 border-purple-200 rounded-lg text-sm resize-none h-24 focus:outline-none focus:border-purple-500 bg-white text-gray-900"
+                className="w-full p-4 border-2 border-purple-200 rounded-lg text-sm resize-none h-24 focus:outline-none focus:border-purple-500 bg-white text-gray-900 placeholder-gray-500"
                 disabled={isGenerating}
+                aria-invalid={generationError ? true : undefined}
+                aria-describedby={generationError ? 'design-prompt-error' : undefined}
               />
               {generationError && (
-                <p className="text-red-500 text-sm mt-2">{generationError}</p>
+                <p id="design-prompt-error" role="alert" className="text-red-500 text-sm mt-2">{generationError}</p>
               )}
               <button
                 onClick={handleGenerateAllDesigns}
@@ -607,12 +614,12 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               >
                 {isGenerating ? (
                   <>
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
                     Generando... {generationProgress}%
                   </>
                 ) : (
                   <>
-                    <Wand2 className="w-6 h-6" />
+                    <Wand2 className="w-6 h-6" aria-hidden="true" />
                     Generar Diseño Completo ({currentGarment?.placements.length} ubicaciones)
                   </>
                 )}
@@ -627,7 +634,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
           <div className="lg:col-span-1 space-y-4">
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Grid3X3 className="w-5 h-5 text-purple-600" />
+                <Grid3X3 className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 Ubicaciones ({completedDesigns}/{totalPlacements})
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -646,18 +653,18 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     >
                       {pd.isGenerating || isRemovingBg ? (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                          <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                          <Loader2 className="w-8 h-8 animate-spin text-purple-500" aria-hidden="true" />
                           {isRemovingBg && <span className="text-xs text-gray-500 mt-1">Quitando fondo...</span>}
                         </div>
                       ) : pd.imageUrl ? (
                         <img
                           src={pd.imageUrl}
-                          alt={config?.name}
+                          alt={config?.name ? `Diseño para ${config.name}` : 'Diseño generado'}
                           className="w-full h-full object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
-                          <Sparkles className="w-8 h-8" />
+                          <Sparkles className="w-8 h-8" aria-hidden="true" />
                         </div>
                       )}
                       <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs text-center py-1 font-medium">
@@ -666,17 +673,19 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                       {pd.imageUrl && !isRemovingBg && (
                         <>
                           <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
-                            <Check className="w-3 h-3" />
+                            <Check className="w-3 h-3" aria-hidden="true" />
                           </div>
                           <button
+                            type="button"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleRemoveBackground(pd.placement);
                             }}
                             className="absolute top-1 left-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-1 transition-colors"
                             title="Quitar fondo"
+                            aria-label="Quitar fondo"
                           >
-                            <Eraser className="w-3 h-3" />
+                            <Eraser className="w-3 h-3" aria-hidden="true" />
                           </button>
                         </>
                       )}
@@ -690,7 +699,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             {extractedColors.length > 0 && (
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Pipette className="w-5 h-5 text-purple-600" />
+                  <Pipette className="w-5 h-5 text-purple-600" aria-hidden="true" />
                   Paleta del Diseño
                 </h3>
                 <div className="flex flex-wrap gap-2">
@@ -732,7 +741,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 {selectedDesign?.imageUrl && (
                   <img
                     src={selectedDesign.imageUrl}
-                    alt="Design preview"
+                    alt={selectedPlacement ? `Vista previa del diseño en ${PLACEMENTS[selectedPlacement]?.name}` : 'Vista previa del diseño'}
                     className="absolute object-contain pointer-events-none"
                     style={{
                       left: `${PLACEMENTS[selectedPlacement!]?.x}%`,
@@ -776,7 +785,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   <div className="relative mb-4">
                     <img
                       src={selectedDesign.imageUrl}
-                      alt="Selected design"
+                      alt={selectedPlacement ? `Diseño seleccionado para ${PLACEMENTS[selectedPlacement]?.name}` : 'Diseño seleccionado'}
                       className="w-full h-48 object-contain rounded-lg bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                     />
                   </div>
@@ -794,9 +803,9 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     className="w-full p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {selectedDesign?.isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <RefreshCw className="w-4 h-4" />
+                      <RefreshCw className="w-4 h-4" aria-hidden="true" />
                     )}
                     Regenerar
                   </button>
@@ -807,25 +816,28 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     className="w-full p-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {removingBgFor === selectedPlacement ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                     ) : (
-                      <Eraser className="w-4 h-4" />
+                      <Eraser className="w-4 h-4" aria-hidden="true" />
                     )}
                     Quitar Fondo
                   </button>
 
                   <input
+                    id="placement-image-upload"
                     type="file"
                     ref={fileInputRef}
                     onChange={handleImageUpload}
                     accept="image/*"
                     className="hidden"
+                    aria-label="Subir imagen para la ubicación seleccionada"
                   />
                   <button
+                    type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="w-full p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-2"
                   >
-                    <Upload className="w-4 h-4" />
+                    <Upload className="w-4 h-4" aria-hidden="true" />
                     Subir Imagen
                   </button>
 
@@ -838,7 +850,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                       ))}
                       className="w-full p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex items-center justify-center gap-2"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-4 h-4" aria-hidden="true" />
                       Eliminar
                     </button>
                   )}
@@ -849,15 +861,19 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             {/* Collection Name */}
             <div className="bg-white rounded-xl p-4 shadow-sm">
               <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Palette className="w-5 h-5 text-purple-600" />
+                <Palette className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 Colección
               </h3>
+              <label htmlFor="collection-name" className="sr-only">
+                Nombre de la colección
+              </label>
               <input
+                id="collection-name"
                 type="text"
                 value={collectionName}
                 onChange={(e) => setCollectionName(e.target.value)}
                 placeholder="Nombre de la colección..."
-                className="w-full p-2 border rounded-lg text-sm text-gray-900 bg-white"
+                className="w-full p-2 border rounded-lg text-sm text-gray-900 bg-white placeholder-gray-500"
               />
             </div>
 
@@ -865,13 +881,14 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             {completedDesigns > 0 && (
               <div className="bg-white rounded-xl p-4 shadow-sm">
                 <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Download className="w-5 h-5 text-purple-600" />
+                  <Download className="w-5 h-5 text-purple-600" aria-hidden="true" />
                   Exportar
                 </h3>
                 <button
+                  type="button"
                   className="w-full p-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-bold hover:from-green-600 hover:to-emerald-600 flex items-center justify-center gap-2"
                 >
-                  <Download className="w-5 h-5" />
+                  <Download className="w-5 h-5" aria-hidden="true" />
                   Descargar Todos ({completedDesigns})
                 </button>
               </div>
@@ -881,90 +898,83 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
       </div>
 
       {/* Validation Modal */}
-      {showValidationModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg max-h-[80vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Validacion de Disenios</h2>
-              <button
-                onClick={() => setShowValidationModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Modal
+        open={showValidationModal}
+        onClose={() => setShowValidationModal(false)}
+        title="Validacion de Disenios"
+        size="md"
+      >
+        <div className="space-y-4">
+          {Object.entries(validationResults).map(([placement, result]) => (
+            <div
+              key={placement}
+              className={`p-4 rounded-lg border ${
+                !result.isValid
+                  ? 'bg-red-50 border-red-200'
+                  : result.warnings.length > 0
+                  ? 'bg-yellow-50 border-yellow-200'
+                  : 'bg-green-50 border-green-200'
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-2">
+                {!result.isValid ? (
+                  <AlertCircle className="w-5 h-5 text-red-600" aria-hidden="true" />
+                ) : result.warnings.length > 0 ? (
+                  <AlertTriangle className="w-5 h-5 text-yellow-600" aria-hidden="true" />
+                ) : (
+                  <CheckCircle className="w-5 h-5 text-green-600" aria-hidden="true" />
+                )}
+                <span className="font-medium text-gray-900">
+                  {PLACEMENTS[placement]?.name || placement}
+                </span>
+              </div>
 
-            <div className="space-y-4">
-              {Object.entries(validationResults).map(([placement, result]) => (
-                <div
-                  key={placement}
-                  className={`p-4 rounded-lg border ${
-                    !result.isValid
-                      ? 'bg-red-50 border-red-200'
-                      : result.warnings.length > 0
-                      ? 'bg-yellow-50 border-yellow-200'
-                      : 'bg-green-50 border-green-200'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 mb-2">
-                    {!result.isValid ? (
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                    ) : result.warnings.length > 0 ? (
-                      <AlertTriangle className="w-5 h-5 text-yellow-600" />
-                    ) : (
-                      <CheckCircle className="w-5 h-5 text-green-600" />
-                    )}
-                    <span className="font-medium text-gray-900">
-                      {PLACEMENTS[placement]?.name || placement}
-                    </span>
-                  </div>
-
-                  {result.errors.length > 0 && (
-                    <div className="mt-2">
-                      {result.errors.map((error, i) => (
-                        <p key={i} className="text-sm text-red-700">
-                          {error}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-
-                  {result.warnings.length > 0 && (
-                    <div className="mt-2">
-                      {result.warnings.map((warning, i) => (
-                        <p key={i} className="text-sm text-yellow-700">
-                          {warning}
-                        </p>
-                      ))}
-                    </div>
-                  )}
-
-                  {result.isValid && result.warnings.length === 0 && (
-                    <p className="text-sm text-green-700">Imagen valida para impresion</p>
-                  )}
+              {result.errors.length > 0 && (
+                <div className="mt-2" role="alert">
+                  {result.errors.map((error, i) => (
+                    <p key={i} className="text-sm text-red-700">
+                      {error}
+                    </p>
+                  ))}
                 </div>
-              ))}
-            </div>
+              )}
 
-            <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
-              <button
-                onClick={() => setShowValidationModal(false)}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-              >
-                Cancelar
-              </button>
-              {Object.values(validationResults).every(r => r.isValid) && (
-                <button
-                  onClick={handleSaveToCollection}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                >
-                  Guardar de todas formas
-                </button>
+              {result.warnings.length > 0 && (
+                <div className="mt-2">
+                  {result.warnings.map((warning, i) => (
+                    <p key={i} className="text-sm text-yellow-700">
+                      {warning}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {result.isValid && result.warnings.length === 0 && (
+                <p className="text-sm text-green-700">Imagen valida para impresion</p>
               )}
             </div>
-          </div>
+          ))}
         </div>
-      )}
+
+        <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
+          <button
+            type="button"
+            onClick={() => setShowValidationModal(false)}
+            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            Cancelar
+          </button>
+          {Object.values(validationResults).every(r => r.isValid) && (
+            <button
+              type="button"
+              onClick={handleSaveToCollection}
+              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+            >
+              Guardar de todas formas
+            </button>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

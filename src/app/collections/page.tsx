@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
+import Modal from '@/components/ui/Modal';
 
 interface Design {
   id: string;
@@ -205,7 +206,7 @@ export default function CollectionsPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                <FolderOpen className="w-8 h-8 text-purple-600" />
+                <FolderOpen className="w-8 h-8 text-purple-600" aria-hidden="true" />
                 Colecciones
               </h1>
               <p className="text-gray-600 mt-2">
@@ -216,7 +217,7 @@ export default function CollectionsPage() {
               onClick={() => setShowNewModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-5 h-5" aria-hidden="true" />
               Nueva Colección
             </button>
           </div>
@@ -225,7 +226,7 @@ export default function CollectionsPage() {
         {/* Collections Grid */}
         {collections.length === 0 ? (
           <div className="bg-white rounded-xl p-12 text-center">
-            <FolderOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+            <FolderOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
             <h3 className="text-xl font-bold text-gray-700 mb-2">No hay colecciones</h3>
             <p className="text-gray-500 mb-4">Crea tu primera colección para organizar tus diseños</p>
             <button
@@ -250,14 +251,14 @@ export default function CollectionsPage() {
                         <img
                           key={design.id}
                           src={design.imageUrl}
-                          alt=""
+                          alt={`Diseño de la colección ${collection.name}`}
                           className="w-full h-full object-cover rounded"
                         />
                       ))}
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-purple-300" />
+                      <ImageIcon className="w-12 h-12 text-purple-300" aria-hidden="true" />
                     </div>
                   )}
 
@@ -282,15 +283,15 @@ export default function CollectionsPage() {
 
                   <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
                     <span className="flex items-center gap-1">
-                      <ImageIcon className="w-3 h-3" />
+                      <ImageIcon className="w-3 h-3" aria-hidden="true" />
                       {collection.designs.length} diseños
                     </span>
                     <span className="flex items-center gap-1">
-                      <Palette className="w-3 h-3" />
+                      <Palette className="w-3 h-3" aria-hidden="true" />
                       {collection.colors.length} colores
                     </span>
                     <span className="flex items-center gap-1">
-                      <Shirt className="w-3 h-3" />
+                      <Shirt className="w-3 h-3" aria-hidden="true" />
                       {collection.garmentTypes.length} prendas
                     </span>
                   </div>
@@ -304,15 +305,17 @@ export default function CollectionsPage() {
                     </button>
                     <button
                       onClick={() => startEditing(collection)}
+                      aria-label="Editar"
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                     >
-                      <Edit3 className="w-4 h-4" />
+                      <Edit3 className="w-4 h-4" aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => deleteCollection(collection.id)}
+                      aria-label="Eliminar"
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
@@ -322,174 +325,159 @@ export default function CollectionsPage() {
         )}
 
         {/* New/Edit Collection Modal */}
-        {(showNewModal || editingCollection) && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b sticky top-0 bg-white">
-                <div className="flex items-center justify-between">
-                  <h2 className="text-xl font-bold text-gray-900">
-                    {editingCollection ? 'Editar Colección' : 'Nueva Colección'}
-                  </h2>
-                  <button
-                    onClick={() => {
-                      setShowNewModal(false);
-                      setEditingCollection(null);
-                      resetForm();
-                    }}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
+        <Modal
+          open={showNewModal || editingCollection !== null}
+          onClose={() => {
+            setShowNewModal(false);
+            setEditingCollection(null);
+            resetForm();
+          }}
+          title={editingCollection ? 'Editar Colección' : 'Nueva Colección'}
+          size="lg"
+        >
+          <div className="space-y-6">
+            {/* Name & Description */}
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="collection-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Nombre *
+                </label>
+                <input
+                  id="collection-name"
+                  type="text"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Ej: Colección Verano 2025"
+                  className="w-full p-3 border rounded-lg text-gray-900 bg-white"
+                />
               </div>
+              <div>
+                <label htmlFor="collection-description" className="block text-sm font-medium text-gray-700 mb-1">
+                  Descripción
+                </label>
+                <textarea
+                  id="collection-description"
+                  value={newDescription}
+                  onChange={(e) => setNewDescription(e.target.value)}
+                  placeholder="Describe tu colección..."
+                  rows={2}
+                  className="w-full p-3 border rounded-lg text-gray-900 bg-white resize-none"
+                />
+              </div>
+            </div>
 
-              <div className="p-6 space-y-6">
-                {/* Name & Description */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Nombre *
-                    </label>
-                    <input
-                      type="text"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      placeholder="Ej: Colección Verano 2025"
-                      className="w-full p-3 border rounded-lg text-gray-900 bg-white"
+            {/* Color Palette */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Paleta de Colores
+              </label>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {newColors.map((color, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full"
+                  >
+                    <div
+                      className="w-5 h-5 rounded-full border"
+                      style={{ backgroundColor: color.hex }}
                     />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Descripción
-                    </label>
-                    <textarea
-                      value={newDescription}
-                      onChange={(e) => setNewDescription(e.target.value)}
-                      placeholder="Describe tu colección..."
-                      rows={2}
-                      className="w-full p-3 border rounded-lg text-gray-900 bg-white resize-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Color Palette */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Paleta de Colores
-                  </label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {newColors.map((color, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full"
-                      >
-                        <div
-                          className="w-5 h-5 rounded-full border"
-                          style={{ backgroundColor: color.hex }}
-                        />
-                        <span className="text-sm">{color.name}</span>
-                        <button
-                          onClick={() => setNewColors(newColors.filter((_, i) => i !== index))}
-                          className="text-gray-500 hover:text-red-500"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      type="color"
-                      value={newColorHex}
-                      onChange={(e) => setNewColorHex(e.target.value)}
-                      className="w-12 h-10 rounded cursor-pointer"
-                    />
-                    <input
-                      type="text"
-                      value={newColorName}
-                      onChange={(e) => setNewColorName(e.target.value)}
-                      placeholder="Nombre del color"
-                      className="flex-1 p-2 border rounded-lg text-gray-900 bg-white"
-                    />
+                    <span className="text-sm">{color.name}</span>
                     <button
-                      onClick={addColor}
-                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                      onClick={() => setNewColors(newColors.filter((_, i) => i !== index))}
+                      aria-label={`Eliminar color ${color.name}`}
+                      className="text-gray-500 hover:text-red-500"
                     >
-                      Añadir
+                      <X className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
-                </div>
-
-                {/* Garment Types */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tipos de Prenda
-                  </label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {GARMENT_OPTIONS.map((garment) => (
-                      <button
-                        key={garment.id}
-                        onClick={() => toggleGarment(garment.id)}
-                        className={`p-3 rounded-lg text-center transition-colors ${
-                          newGarments.includes(garment.id)
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-purple-100'
-                        }`}
-                      >
-                        <span className="text-2xl block mb-1">{garment.icon}</span>
-                        <span className="text-xs">{garment.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                ))}
               </div>
-
-              <div className="p-6 border-t bg-gray-50 flex justify-end gap-3">
+              <div className="flex gap-2">
+                <input
+                  id="collection-color-hex"
+                  type="color"
+                  value={newColorHex}
+                  onChange={(e) => setNewColorHex(e.target.value)}
+                  aria-label="Seleccionar color"
+                  className="w-12 h-10 rounded cursor-pointer"
+                />
+                <input
+                  id="collection-color-name"
+                  type="text"
+                  value={newColorName}
+                  onChange={(e) => setNewColorName(e.target.value)}
+                  placeholder="Nombre del color"
+                  aria-label="Nombre del color"
+                  className="flex-1 p-2 border rounded-lg text-gray-900 bg-white"
+                />
                 <button
-                  onClick={() => {
-                    setShowNewModal(false);
-                    setEditingCollection(null);
-                    resetForm();
-                  }}
-                  className="px-6 py-2 text-gray-600 hover:bg-gray-200 rounded-lg"
+                  onClick={addColor}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                 >
-                  Cancelar
-                </button>
-                <button
-                  onClick={editingCollection ? updateCollection : createCollection}
-                  className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
-                >
-                  {editingCollection ? 'Guardar Cambios' : 'Crear Colección'}
+                  Añadir
                 </button>
               </div>
             </div>
+
+            {/* Garment Types */}
+            <div>
+              <span className="block text-sm font-medium text-gray-700 mb-2">
+                Tipos de Prenda
+              </span>
+              <div className="grid grid-cols-4 gap-2">
+                {GARMENT_OPTIONS.map((garment) => (
+                  <button
+                    key={garment.id}
+                    onClick={() => toggleGarment(garment.id)}
+                    aria-pressed={newGarments.includes(garment.id)}
+                    className={`p-3 rounded-lg text-center transition-colors ${
+                      newGarments.includes(garment.id)
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-gray-100 text-gray-700 hover:bg-purple-100'
+                    }`}
+                  >
+                    <span className="text-2xl block mb-1" aria-hidden="true">{garment.icon}</span>
+                    <span className="text-xs">{garment.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t pt-6 flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowNewModal(false);
+                  setEditingCollection(null);
+                  resetForm();
+                }}
+                className="px-6 py-2 text-gray-600 hover:bg-gray-200 rounded-lg"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={editingCollection ? updateCollection : createCollection}
+                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
+              >
+                {editingCollection ? 'Guardar Cambios' : 'Crear Colección'}
+              </button>
+            </div>
           </div>
-        )}
+        </Modal>
 
         {/* Collection Detail Modal */}
-        {selectedCollection && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b sticky top-0 bg-white">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">{selectedCollection.name}</h2>
-                    <p className="text-sm text-gray-500">{selectedCollection.description}</p>
-                  </div>
-                  <button
-                    onClick={() => setSelectedCollection(null)}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6">
+        <Modal
+          open={selectedCollection !== null}
+          onClose={() => setSelectedCollection(null)}
+          title={selectedCollection?.name ?? ''}
+          description={selectedCollection?.description || undefined}
+          size="xl"
+        >
+          {selectedCollection && (
+            <>
                 {/* Color Palette */}
                 <div className="mb-6">
                   <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-purple-600" />
+                    <Palette className="w-5 h-5 text-purple-600" aria-hidden="true" />
                     Paleta de Colores
                   </h3>
                   <div className="flex flex-wrap gap-3">
@@ -511,7 +499,7 @@ export default function CollectionsPage() {
                 {/* Garment Types */}
                 <div className="mb-6">
                   <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Shirt className="w-5 h-5 text-purple-600" />
+                    <Shirt className="w-5 h-5 text-purple-600" aria-hidden="true" />
                     Prendas
                   </h3>
                   <div className="flex flex-wrap gap-2">
@@ -522,7 +510,7 @@ export default function CollectionsPage() {
                           key={gId}
                           className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
                         >
-                          {garment.icon} {garment.name}
+                          <span aria-hidden="true">{garment.icon}</span> {garment.name}
                         </span>
                       ) : null;
                     })}
@@ -533,21 +521,21 @@ export default function CollectionsPage() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5 text-purple-600" />
+                      <ImageIcon className="w-5 h-5 text-purple-600" aria-hidden="true" />
                       Diseños ({selectedCollection.designs.length})
                     </h3>
                     <Link
                       href="/studio"
                       className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"
                     >
-                      <Plus className="w-4 h-4" />
+                      <Plus className="w-4 h-4" aria-hidden="true" />
                       Añadir Diseño
                     </Link>
                   </div>
 
                   {selectedCollection.designs.length === 0 ? (
                     <div className="bg-gray-50 rounded-xl p-8 text-center">
-                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300" aria-hidden="true" />
                       <p className="text-gray-500">No hay diseños en esta colección</p>
                       <Link
                         href="/"
@@ -572,15 +560,17 @@ export default function CollectionsPage() {
                             <button
                               className="p-2 bg-white rounded-lg hover:bg-gray-100"
                               title="Editar en Studio"
+                              aria-label="Editar en Studio"
                             >
-                              <Edit3 className="w-4 h-4" />
+                              <Edit3 className="w-4 h-4" aria-hidden="true" />
                             </button>
                             <button
                               onClick={() => removeDesignFromCollection(selectedCollection.id, design.id)}
                               className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                               title="Eliminar"
+                              aria-label="Eliminar"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Trash2 className="w-4 h-4" aria-hidden="true" />
                             </button>
                           </div>
                         </div>
@@ -592,7 +582,7 @@ export default function CollectionsPage() {
                 {/* Export */}
                 <div className="mt-6 pt-6 border-t flex gap-3">
                   <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                    <Download className="w-4 h-4" />
+                    <Download className="w-4 h-4" aria-hidden="true" />
                     Exportar Colección
                   </button>
                   <a
@@ -601,14 +591,13 @@ export default function CollectionsPage() {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
                   >
-                    <ExternalLink className="w-4 h-4" />
+                    <ExternalLink className="w-4 h-4" aria-hidden="true" />
                     Subir a Printful
                   </a>
                 </div>
-              </div>
-            </div>
-          </div>
-        )}
+            </>
+          )}
+        </Modal>
       </div>
     </div>
   );

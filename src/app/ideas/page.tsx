@@ -129,7 +129,7 @@ export default function IdeasPage() {
             ← Volver al Generador
           </Link>
           <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <Lightbulb className="w-8 h-8 text-yellow-500" />
+            <Lightbulb className="w-8 h-8 text-yellow-500" aria-hidden="true" />
             Generador de Ideas
           </h1>
           <p className="text-gray-600 mt-2">
@@ -142,17 +142,18 @@ export default function IdeasPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 sticky top-8">
               <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-600" />
+                <Sparkles className="w-5 h-5 text-purple-600" aria-hidden="true" />
                 Configuración
               </h2>
 
               <div className="space-y-4">
                 {/* Theme Selection */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-theme" className="block text-sm font-medium text-gray-700 mb-2">
                     Tema
                   </label>
                   <select
+                    id="idea-theme"
                     value={theme}
                     onChange={(e) => {
                       setTheme(e.target.value);
@@ -169,10 +170,11 @@ export default function IdeasPage() {
 
                 {/* Custom Theme */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-custom-theme" className="block text-sm font-medium text-gray-700 mb-2">
                     O escribe tu propio tema
                   </label>
                   <input
+                    id="idea-custom-theme"
                     type="text"
                     value={customTheme}
                     onChange={(e) => {
@@ -180,16 +182,17 @@ export default function IdeasPage() {
                       setTheme('');
                     }}
                     placeholder="Ej: Gatos astronautas, Flores mecánicas..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
                   />
                 </div>
 
                 {/* Style */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-style" className="block text-sm font-medium text-gray-700 mb-2">
                     Estilo
                   </label>
                   <select
+                    id="idea-style"
                     value={style}
                     onChange={(e) => setStyle(e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
@@ -202,10 +205,11 @@ export default function IdeasPage() {
 
                 {/* Count */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-count" className="block text-sm font-medium text-gray-700 mb-2">
                     Cantidad de ideas
                   </label>
                   <select
+                    id="idea-count"
                     value={count}
                     onChange={(e) => setCount(Number(e.target.value))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
@@ -224,12 +228,12 @@ export default function IdeasPage() {
                 >
                   {loading ? (
                     <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
                       Generando...
                     </>
                   ) : (
                     <>
-                      <Lightbulb className="w-5 h-5" />
+                      <Lightbulb className="w-5 h-5" aria-hidden="true" />
                       Generar Ideas
                     </>
                   )}
@@ -247,12 +251,12 @@ export default function IdeasPage() {
           </div>
 
           {/* Results */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2" aria-live="polite">
             {ideas.length === 0 && !loading && (
               <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-12 text-center">
-                <Lightbulb className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                <Lightbulb className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
                 <p className="text-gray-500">Las ideas generadas aparecerán aquí</p>
-                <p className="text-gray-400 text-sm mt-2">
+                <p className="text-gray-600 text-sm mt-2">
                   Selecciona un tema y haz clic en "Generar Ideas"
                 </p>
               </div>
@@ -260,9 +264,9 @@ export default function IdeasPage() {
 
             {loading && (
               <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-12 text-center">
-                <Loader2 className="w-16 h-16 mx-auto mb-4 text-yellow-500 animate-spin" />
+                <Loader2 className="w-16 h-16 mx-auto mb-4 text-yellow-500 animate-spin" aria-hidden="true" />
                 <p className="text-gray-600">Generando ideas creativas...</p>
-                <p className="text-gray-400 text-sm mt-2">Esto puede tardar unos segundos</p>
+                <p className="text-gray-600 text-sm mt-2">Esto puede tardar unos segundos</p>
               </div>
             )}
 
@@ -277,7 +281,7 @@ export default function IdeasPage() {
                     disabled={loading}
                     className="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
                   >
-                    <RefreshCw className="w-4 h-4" />
+                    <RefreshCw className="w-4 h-4" aria-hidden="true" />
                     Regenerar
                   </button>
                 </div>
@@ -299,11 +303,12 @@ export default function IdeasPage() {
                           onClick={() => copyPrompt(idea.prompt, index)}
                           className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
                           title="Copiar prompt"
+                          aria-label={copiedIndex === index ? 'Prompt copiado' : 'Copiar prompt'}
                         >
                           {copiedIndex === index ? (
-                            <Check className="w-4 h-4 text-green-500" />
+                            <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
                           ) : (
-                            <Copy className="w-4 h-4" />
+                            <Copy className="w-4 h-4" aria-hidden="true" />
                           )}
                         </button>
                         <button
@@ -311,7 +316,7 @@ export default function IdeasPage() {
                           className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
                           title="Usar en generador"
                         >
-                          <Wand2 className="w-3 h-3" />
+                          <Wand2 className="w-3 h-3" aria-hidden="true" />
                           Usar
                         </button>
                       </div>
@@ -328,7 +333,7 @@ export default function IdeasPage() {
                             key={tagIndex}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full"
                           >
-                            <Tag className="w-3 h-3" />
+                            <Tag className="w-3 h-3" aria-hidden="true" />
                             {tag}
                           </span>
                         ))}

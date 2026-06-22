@@ -7,7 +7,6 @@ import {
   Pencil,
   Trash2,
   Save,
-  X,
 } from 'lucide-react'
 import {
   getProductMappings,
@@ -15,6 +14,7 @@ import {
   updateProductMapping,
   deleteProductMapping,
 } from '@/actions/products'
+import Modal from '@/components/ui/Modal'
 
 // Utility function to calculate margin
 function calculateMargin(basePrice: number, salePrice: number): number {
@@ -124,13 +124,14 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Tags className="w-8 h-8 text-purple-600" />
+            <Tags className="w-8 h-8 text-purple-600" aria-hidden="true" />
             Mapeo de Productos
           </h1>
           <p className="text-gray-500 mt-1">Conecta tus productos locales con Printful</p>
         </div>
         <div className="flex items-center gap-3">
           <button
+            type="button"
             onClick={() => {
               resetForm()
               setEditingId(null)
@@ -138,153 +139,150 @@ export default function ProductsPage() {
             }}
             className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4" aria-hidden="true" />
             Nuevo Mapeo
           </button>
         </div>
       </div>
 
       {/* Form Modal */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold">
-                {editingId ? 'Editar Mapeo' : 'Nuevo Mapeo'}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowForm(false)
-                  setEditingId(null)
-                }}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        open={showForm}
+        onClose={() => {
+          setShowForm(false)
+          setEditingId(null)
+        }}
+        title={editingId ? 'Editar Mapeo' : 'Nuevo Mapeo'}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
+              Nombre del Producto
+            </label>
+            <input
+              id="product-name"
+              type="text"
+              value={formData.productName}
+              onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              placeholder="Camiseta Basica Blanca"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="product-local-id" className="block text-sm font-medium text-gray-700 mb-1">
+                ID Local
+              </label>
+              <input
+                id="product-local-id"
+                type="text"
+                value={formData.localProductId}
+                onChange={(e) => setFormData({ ...formData, localProductId: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="prod_123"
+              />
             </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Nombre del Producto
-                </label>
-                <input
-                  type="text"
-                  value={formData.productName}
-                  onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  placeholder="Camiseta Basica Blanca"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    ID Local
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.localProductId}
-                    onChange={(e) => setFormData({ ...formData, localProductId: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="prod_123"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Printful Sync Variant ID
-                  </label>
-                  <input
-                    type="number"
-                    value={formData.printfulSyncVariantId ?? ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        printfulSyncVariantId:
-                          e.target.value === '' ? undefined : parseInt(e.target.value, 10),
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="4567890123"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio Base (Coste Printful)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.basePrice}
-                    onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="12.00"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio de Venta
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.salePrice}
-                    onChange={(e) => setFormData({ ...formData, salePrice: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="29.99"
-                  />
-                </div>
-              </div>
-
-              {formData.basePrice > 0 && formData.salePrice > 0 && (
-                <div className="p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-600">
-                    Margen estimado:{' '}
-                    <span className={`font-semibold ${calculateMargin(formData.basePrice, formData.salePrice) >= 30 ? 'text-green-600' : 'text-orange-600'}`}>
-                      {calculateMargin(formData.basePrice, formData.salePrice).toFixed(1)}%
-                    </span>
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Categoria (opcional)
-                </label>
-                <input
-                  type="text"
-                  value={formData.category || ''}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                  placeholder="camisetas"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowForm(false)
-                  setEditingId(null)
-                }}
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-              >
-                <Save className="w-4 h-4" />
-                Guardar
-              </button>
+            <div>
+              <label htmlFor="product-variant-id" className="block text-sm font-medium text-gray-700 mb-1">
+                Printful Sync Variant ID
+              </label>
+              <input
+                id="product-variant-id"
+                type="number"
+                value={formData.printfulSyncVariantId ?? ''}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    printfulSyncVariantId:
+                      e.target.value === '' ? undefined : parseInt(e.target.value, 10),
+                  })
+                }
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="4567890123"
+              />
             </div>
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="product-base-price" className="block text-sm font-medium text-gray-700 mb-1">
+                Precio Base (Coste Printful)
+              </label>
+              <input
+                id="product-base-price"
+                type="number"
+                step="0.01"
+                value={formData.basePrice}
+                onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="12.00"
+              />
+            </div>
+            <div>
+              <label htmlFor="product-sale-price" className="block text-sm font-medium text-gray-700 mb-1">
+                Precio de Venta
+              </label>
+              <input
+                id="product-sale-price"
+                type="number"
+                step="0.01"
+                value={formData.salePrice}
+                onChange={(e) => setFormData({ ...formData, salePrice: parseFloat(e.target.value) || 0 })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                placeholder="29.99"
+              />
+            </div>
+          </div>
+
+          {formData.basePrice > 0 && formData.salePrice > 0 && (
+            <div className="p-3 bg-gray-50 rounded-lg">
+              <p className="text-sm text-gray-600">
+                Margen estimado:{' '}
+                <span className={`font-semibold ${calculateMargin(formData.basePrice, formData.salePrice) >= 30 ? 'text-green-600' : 'text-orange-600'}`}>
+                  {calculateMargin(formData.basePrice, formData.salePrice).toFixed(1)}%
+                </span>
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">
+              Categoria (opcional)
+            </label>
+            <input
+              id="product-category"
+              type="text"
+              value={formData.category || ''}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              placeholder="camisetas"
+            />
+          </div>
         </div>
-      )}
+
+        <div className="flex items-center justify-end gap-3 mt-6">
+          <button
+            type="button"
+            onClick={() => {
+              setShowForm(false)
+              setEditingId(null)
+            }}
+            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+          >
+            <Save className="w-4 h-4" aria-hidden="true" />
+            Guardar
+          </button>
+        </div>
+      </Modal>
 
       {/* Table */}
       <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -351,7 +349,7 @@ export default function ProductsPage() {
                           {mapping.printfulSyncVariantId}
                         </code>
                       ) : (
-                        <span className="text-xs text-gray-400">Sin sincronizar</span>
+                        <span className="text-xs text-gray-600">Sin sincronizar</span>
                       )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
@@ -376,16 +374,20 @@ export default function ProductsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
                         <button
+                          type="button"
                           onClick={() => handleEdit(mapping)}
                           className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          aria-label={`Editar ${mapping.productName}`}
                         >
-                          <Pencil className="w-4 h-4" />
+                          <Pencil className="w-4 h-4" aria-hidden="true" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(mapping.id)}
                           className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
+                          aria-label={`Eliminar ${mapping.productName}`}
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     </td>
