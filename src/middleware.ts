@@ -29,6 +29,9 @@ export default auth((req) => {
 })
 
 export const config = {
+  // Node.js runtime: el gate de auth incluye NextAuth + adapter Prisma y supera
+  // el límite de 1 MB de las Edge Functions. En Node no aplica ese límite.
+  runtime: 'nodejs',
   matcher: [
     '/admin/:path*',
     '/api/admin/:path*',

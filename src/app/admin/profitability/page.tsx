@@ -116,7 +116,7 @@ export default function ProfitabilityPage() {
                 <span className="text-sm text-gray-600">Costes Produccion</span>
               </div>
               <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalCosts)}</p>
-              <p className="text-sm text-gray-500 mt-2">Gelato</p>
+              <p className="text-sm text-gray-500 mt-2">Printful</p>
             </div>
 
             <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -196,7 +196,7 @@ export default function ProfitabilityPage() {
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Costes de Produccion (Gelato)</span>
+                  <span className="text-sm text-gray-600">Costes de Produccion (Printful)</span>
                   <span className="text-sm font-medium">
                     {stats.totalRevenue > 0
                       ? ((stats.totalCosts / stats.totalRevenue) * 100).toFixed(1)
@@ -258,7 +258,7 @@ export default function ProfitabilityPage() {
               <p>
                 <span className="text-green-600 font-semibold">Beneficio Neto</span> ={' '}
                 <span className="text-blue-600">Ingresos ({formatCurrency(stats.totalRevenue)})</span> -{' '}
-                <span className="text-orange-600">Costes Gelato ({formatCurrency(stats.totalCosts)})</span> -{' '}
+                <span className="text-orange-600">Coste produccion Printful ({formatCurrency(stats.totalCosts)})</span> -{' '}
                 <span className="text-purple-600">Comisiones Stripe ({formatCurrency(stats.totalFees)})</span>
               </p>
               <p className="mt-2">

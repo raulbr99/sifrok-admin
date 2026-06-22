@@ -2,22 +2,12 @@
 
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { printfulApi } from '@/lib/printful'
 import { revalidatePath } from 'next/cache'
-import axios from 'axios'
-
-const GELATO_API_URL = 'https://product.gelatoapis.com/v3'
-
-const gelatoProductApi = axios.create({
-  baseURL: GELATO_API_URL,
-  headers: {
-    'X-API-KEY': process.env.GELATO_API_KEY || '',
-    'Content-Type': 'application/json',
-  },
-})
 
 export interface ProductMappingInput {
   localProductId: string
-  gelatoProductUid: string
+  printfulSyncVariantId?: number
   productName: string
   basePrice: number
   salePrice: number
@@ -65,7 +55,7 @@ export async function createProductMapping(data: ProductMappingInput) {
   const mapping = await prisma.productMapping.create({
     data: {
       localProductId: data.localProductId,
-      gelatoProductUid: data.gelatoProductUid,
+      printfulSyncVariantId: data.printfulSyncVariantId ?? null,
       productName: data.productName,
       basePrice: data.basePrice,
       salePrice: data.salePrice,
@@ -116,37 +106,38 @@ export async function deleteProductMapping(id: string) {
 }
 
 /**
- * Obtener precio base de un producto en Gelato
+ * Obtener precio de venta de una sync variant en Printful
  */
-export async function getGelatoProductPrice(productUid: string): Promise<number | null> {
+export async function getPrintfulVariantPrice(
+  syncVariantId: number
+): Promise<number | null> {
   const session = await auth()
   if (!session || session.user?.role !== 'admin') {
     throw new Error('No autorizado')
   }
 
   try {
-    const response = await gelatoProductApi.get(`/products/${productUid}/prices`, {
-      params: {
-        country: 'ES',
-        currency: 'EUR',
-      },
-    })
-
-    const prices = response.data
-    if (prices?.length > 0) {
-      return prices[0].price
+    const response = await printfulApi.get(`/store/variants/${syncVariantId}`)
+    const variant = response.data?.result
+    const retailPrice = variant?.retail_price
+    if (retailPrice != null) {
+      const parsed = parseFloat(retailPrice)
+      return Number.isNaN(parsed) ? null : parsed
     }
     return null
   } catch (error: any) {
-    console.error('Error obteniendo precio de Gelato:', error.response?.data || error.message)
+    console.error(
+      'Error obteniendo precio de Printful:',
+      error.response?.data || error.message
+    )
     return null
   }
 }
 
 /**
- * Sincronizar precios desde Gelato para todos los mapeos
+ * Sincronizar precios desde Printful para todos los mapeos
  */
-export async function syncPricesFromGelato() {
+export async function syncPricesFromPrintful() {
   const session = await auth()
   if (!session || session.user?.role !== 'admin') {
     throw new Error('No autorizado')
@@ -160,8 +151,14 @@ export async function syncPricesFromGelato() {
   }
 
   for (const mapping of mappings) {
+    if (mapping.printfulSyncVariantId == null) {
+      results.failed++
+      results.errors.push(`${mapping.productName} no tiene sync variant de Printful`)
+      continue
+    }
+
     try {
-      const price = await getGelatoProductPrice(mapping.gelatoProductUid)
+      const price = await getPrintfulVariantPrice(mapping.printfulSyncVariantId)
       if (price !== null) {
         await prisma.productMapping.update({
           where: { id: mapping.id },
@@ -181,4 +178,3 @@ export async function syncPricesFromGelato() {
   revalidatePath('/admin/products')
   return results
 }
-

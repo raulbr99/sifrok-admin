@@ -596,13 +596,13 @@ export default function CollectionsPage() {
                     Exportar Colección
                   </button>
                   <a
-                    href="https://dashboard.gelato.com"
+                    href="https://www.printful.com/dashboard"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Subir a Gelato
+                    Subir a Printful
                   </a>
                 </div>
               </div>

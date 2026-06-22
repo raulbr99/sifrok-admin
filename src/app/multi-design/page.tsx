@@ -146,7 +146,7 @@ export default function MultiDesignPage() {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    alert(`¡${designs.length} diseños descargados! Ahora puedes subirlos manualmente a Gelato.`);
+    alert(`¡${designs.length} diseños descargados! Ahora puedes subirlos manualmente a Printful.`);
   };
 
   const handleEditDesign = async (area: string) => {
@@ -541,7 +541,7 @@ export default function MultiDesignPage() {
 
             <div className="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
               <p className="text-sm text-blue-800">
-                <strong>💡 Siguiente paso:</strong> Sube estos diseños manualmente a Gelato Dashboard y configura el producto con las variantes que necesites.
+                <strong>💡 Siguiente paso:</strong> Sube estos diseños manualmente a Printful Dashboard y configura el producto con las variantes que necesites.
               </p>
             </div>
           </div>

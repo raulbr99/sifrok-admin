@@ -13,13 +13,12 @@ export async function GET() {
       );
     }
 
-    // TODO: Verificar que el usuario sea admin
-    // if (session.user.role !== 'admin') {
-    //   return NextResponse.json(
-    //     { error: 'No autorizado' },
-    //     { status: 403 }
-    //   );
-    // }
+    if (session.user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 403 }
+      );
+    }
 
     // Obtener archivos de Printful File Library
     const response = await printfulApi.get('/files');

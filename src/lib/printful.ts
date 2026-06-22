@@ -3,9 +3,11 @@ import { Product, ProductVariant } from '@/types/product';
 
 const PRINTFUL_API_URL = 'https://api.printful.com';
 
-// Cliente API para servidor (con autenticación)
-const apiKey = process.env.NEXT_PUBLIC_PRINTFUL_API_KEY || '';
-const storeId = process.env.NEXT_PUBLIC_PRINTFUL_STORE_ID || 'ComicStore';
+// Cliente API para servidor (con autenticación).
+// SERVER-ONLY: nunca usar NEXT_PUBLIC_ aquí — la key da acceso total a pedidos/facturación
+// y NEXT_PUBLIC_* se inyecta en el bundle del navegador (se filtraría a cualquier visitante).
+const apiKey = process.env.PRINTFUL_API_KEY || '';
+const storeId = process.env.PRINTFUL_STORE_ID || 'ComicStore';
 
 export const printfulApi = axios.create({
   baseURL: PRINTFUL_API_URL,

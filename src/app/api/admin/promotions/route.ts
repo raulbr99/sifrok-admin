@@ -14,13 +14,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // TODO: Verificar que el usuario sea admin
-    // if (session.user.role !== 'admin') {
-    //   return NextResponse.json(
-    //     { error: 'No autorizado' },
-    //     { status: 403 }
-    //   );
-    // }
+    if (session.user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'No autorizado' },
+        { status: 403 }
+      );
+    }
 
     const promotions = await prisma.promotion.findMany({
       orderBy: {

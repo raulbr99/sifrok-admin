@@ -6,7 +6,6 @@ import {
   Plus,
   Pencil,
   Trash2,
-  RefreshCw,
   Save,
   X,
 } from 'lucide-react'
@@ -15,8 +14,6 @@ import {
   createProductMapping,
   updateProductMapping,
   deleteProductMapping,
-  syncPricesFromGelato,
-  type ProductMappingInput,
 } from '@/actions/products'
 
 // Utility function to calculate margin
@@ -25,10 +22,20 @@ function calculateMargin(basePrice: number, salePrice: number): number {
   return ((salePrice - basePrice) / salePrice) * 100
 }
 
+interface ProductMappingForm {
+  localProductId: string
+  printfulSyncVariantId?: number
+  productName: string
+  basePrice: number
+  salePrice: number
+  category?: string
+  placements?: string
+}
+
 interface ProductMapping {
   id: string
   localProductId: string
-  gelatoProductUid: string
+  printfulSyncVariantId: number | null
   productName: string
   basePrice: number
   salePrice: number
@@ -36,20 +43,21 @@ interface ProductMapping {
   createdAt: Date
 }
 
+const EMPTY_FORM: ProductMappingForm = {
+  localProductId: '',
+  printfulSyncVariantId: undefined,
+  productName: '',
+  basePrice: 0,
+  salePrice: 0,
+  category: '',
+}
+
 export default function ProductsPage() {
   const [mappings, setMappings] = useState<ProductMapping[]>([])
   const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
-  const [formData, setFormData] = useState<ProductMappingInput>({
-    localProductId: '',
-    gelatoProductUid: '',
-    productName: '',
-    basePrice: 0,
-    salePrice: 0,
-    category: '',
-  })
+  const [formData, setFormData] = useState<ProductMappingForm>(EMPTY_FORM)
 
   useEffect(() => {
     loadMappings()
@@ -64,19 +72,6 @@ export default function ProductsPage() {
       console.error('Error loading mappings:', error)
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function handleSync() {
-    setSyncing(true)
-    try {
-      const result = await syncPricesFromGelato()
-      alert(`Sincronizacion completada: ${result.updated} actualizados, ${result.failed} fallidos`)
-      loadMappings()
-    } catch (error: any) {
-      alert(`Error: ${error.message}`)
-    } finally {
-      setSyncing(false)
     }
   }
 
@@ -110,7 +105,7 @@ export default function ProductsPage() {
   function handleEdit(mapping: ProductMapping) {
     setFormData({
       localProductId: mapping.localProductId,
-      gelatoProductUid: mapping.gelatoProductUid,
+      printfulSyncVariantId: mapping.printfulSyncVariantId ?? undefined,
       productName: mapping.productName,
       basePrice: mapping.basePrice,
       salePrice: mapping.salePrice,
@@ -121,14 +116,7 @@ export default function ProductsPage() {
   }
 
   function resetForm() {
-    setFormData({
-      localProductId: '',
-      gelatoProductUid: '',
-      productName: '',
-      basePrice: 0,
-      salePrice: 0,
-      category: '',
-    })
+    setFormData(EMPTY_FORM)
   }
 
   return (
@@ -139,17 +127,9 @@ export default function ProductsPage() {
             <Tags className="w-8 h-8 text-purple-600" />
             Mapeo de Productos
           </h1>
-          <p className="text-gray-500 mt-1">Conecta tus productos locales con Gelato</p>
+          <p className="text-gray-500 mt-1">Conecta tus productos locales con Printful</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleSync}
-            disabled={syncing}
-            className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
-            Sincronizar Precios
-          </button>
           <button
             onClick={() => {
               resetForm()
@@ -212,14 +192,20 @@ export default function ProductsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Gelato Product UID
+                    Printful Sync Variant ID
                   </label>
                   <input
-                    type="text"
-                    value={formData.gelatoProductUid}
-                    onChange={(e) => setFormData({ ...formData, gelatoProductUid: e.target.value })}
+                    type="number"
+                    value={formData.printfulSyncVariantId ?? ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        printfulSyncVariantId:
+                          e.target.value === '' ? undefined : parseInt(e.target.value, 10),
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-                    placeholder="apparel_product_gca_..."
+                    placeholder="4567890123"
                   />
                 </div>
               </div>
@@ -227,7 +213,7 @@ export default function ProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Precio Base (Coste Gelato)
+                    Precio Base (Coste Printful)
                   </label>
                   <input
                     type="number"
@@ -312,7 +298,7 @@ export default function ProductsPage() {
                 ID Local
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
-                Gelato UID
+                Printful Variant ID
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
                 Coste
@@ -360,9 +346,13 @@ export default function ProductsPage() {
                       </code>
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
-                        {mapping.gelatoProductUid.slice(0, 20)}...
-                      </code>
+                      {mapping.printfulSyncVariantId != null ? (
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          {mapping.printfulSyncVariantId}
+                        </code>
+                      ) : (
+                        <span className="text-xs text-gray-400">Sin sincronizar</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {mapping.basePrice.toFixed(2)} EUR

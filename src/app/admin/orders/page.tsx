@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { getOrders, calculateOrderProfit } from '@/actions/orders'
 import { processRefund } from '@/actions/stripe'
-import { syncGelatoOrderStatus } from '@/actions/gelato'
+import { syncPrintfulOrderStatus } from '@/actions/printful'
 
 interface Order {
   id: string
@@ -35,8 +35,12 @@ interface Order {
   total: number
   currency: string
   status: string
-  gelatoOrderId: string | null
-  gelatoStatus: string | null
+  printfulOrderId: string | null
+  printfulStatus: string | null
+  trackingNumber: string | null
+  trackingUrl: string | null
+  carrier: string | null
+  shippedAt: Date | null
   productionCost: number | null
   stripeFee: number | null
   netProfit: number | null
@@ -60,13 +64,15 @@ const statusColors: Record<string, string> = {
   FAILED: 'bg-gray-100 text-gray-800',
 }
 
-const gelatoStatusColors: Record<string, string> = {
-  created: 'bg-gray-100 text-gray-800',
-  passed: 'bg-blue-100 text-blue-800',
-  in_production: 'bg-purple-100 text-purple-800',
+const printfulStatusColors: Record<string, string> = {
+  draft: 'bg-gray-100 text-gray-800',
+  pending: 'bg-blue-100 text-blue-800',
+  inprocess: 'bg-purple-100 text-purple-800',
+  onhold: 'bg-yellow-100 text-yellow-800',
+  fulfilled: 'bg-green-100 text-green-800',
   shipped: 'bg-indigo-100 text-indigo-800',
-  delivered: 'bg-green-100 text-green-800',
-  cancelled: 'bg-red-100 text-red-800',
+  canceled: 'bg-red-100 text-red-800',
+  failed: 'bg-red-100 text-red-800',
 }
 
 export default function OrdersPage() {
@@ -113,10 +119,10 @@ export default function OrdersPage() {
     }
   }
 
-  async function handleSyncGelato(orderId: string) {
+  async function handleSyncPrintful(orderId: string) {
     setProcessingId(orderId)
     try {
-      await syncGelatoOrderStatus(orderId)
+      await syncPrintfulOrderStatus(orderId)
       loadOrders()
     } catch (error: any) {
       alert(`Error: ${error.message}`)
@@ -188,16 +194,44 @@ export default function OrdersPage() {
         ),
       },
       {
-        accessorKey: 'gelatoStatus',
-        header: 'Estado Gelato',
+        accessorKey: 'printfulStatus',
+        header: 'Estado Printful',
         cell: ({ row }) => (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              gelatoStatusColors[row.original.gelatoStatus || ''] || 'bg-gray-100 text-gray-500'
-            }`}
-          >
-            {row.original.gelatoStatus || 'No enviado'}
-          </span>
+          <div className="flex flex-col gap-1">
+            <span
+              className={`w-fit px-2 py-1 rounded-full text-xs font-medium ${
+                printfulStatusColors[row.original.printfulStatus || ''] || 'bg-gray-100 text-gray-500'
+              }`}
+            >
+              {row.original.printfulStatus || 'No enviado'}
+            </span>
+            {row.original.trackingNumber && (
+              <span className="text-xs text-gray-500">
+                {row.original.carrier ? `${row.original.carrier}: ` : ''}
+                {row.original.trackingUrl ? (
+                  <a
+                    href={row.original.trackingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                  >
+                    {row.original.trackingNumber}
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                ) : (
+                  <span className="font-mono">{row.original.trackingNumber}</span>
+                )}
+              </span>
+            )}
+            {row.original.shippedAt && (
+              <span className="text-xs text-gray-400">
+                Enviado {row.original.shippedAt.toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: 'short',
+                })}
+              </span>
+            )}
+          </div>
         ),
       },
       {
@@ -257,12 +291,12 @@ export default function OrdersPage() {
             >
               <DollarSign className="w-4 h-4" />
             </button>
-            {row.original.gelatoOrderId && (
+            {row.original.printfulOrderId && (
               <button
-                onClick={() => handleSyncGelato(row.original.id)}
+                onClick={() => handleSyncPrintful(row.original.id)}
                 disabled={processingId === row.original.id}
                 className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
-                title="Sincronizar Gelato"
+                title="Sincronizar Printful"
               >
                 <Truck className="w-4 h-4" />
               </button>

@@ -3,6 +3,7 @@
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { createRefund, getPaymentIntent, calculateStripeFee } from '@/lib/stripe'
+import { cancelPrintfulOrder } from '@/actions/printful'
 import { revalidatePath } from 'next/cache'
 
 export interface RefundResult {
@@ -65,6 +66,25 @@ export async function processRefund(
         processed: true,
       },
     })
+
+    // Best-effort: cancelar también la producción en Printful para que un pedido
+    // reembolsado no llegue a fabricarse/enviarse. No bloquea el refund si falla.
+    if (order.printfulOrderId) {
+      try {
+        await cancelPrintfulOrder(orderId)
+      } catch (cancelErr: any) {
+        console.error('Refund: fallo al cancelar producción en Printful (refund OK igualmente):', cancelErr.message)
+        await prisma.webhookLog.create({
+          data: {
+            source: 'printful',
+            eventType: 'production_cancel_failed',
+            payload: JSON.stringify({ orderId, error: cancelErr.message }),
+            processed: false,
+            error: cancelErr.message,
+          },
+        })
+      }
+    }
 
     revalidatePath('/admin/orders')
 

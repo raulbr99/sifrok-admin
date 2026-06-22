@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { constructWebhookEvent, calculateStripeFee } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
-import { createGelatoOrderFromStripe } from '@/actions/gelato'
+import { createPrintfulOrderFromStripe } from '@/actions/printful'
 import Stripe from 'stripe'
 
 export async function POST(req: NextRequest) {
@@ -163,14 +163,15 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     })
   }
 
-  // Enviar orden a Gelato automaticamente
+  // Enviar orden a Printful automáticamente (proveedor POD único).
   try {
-    console.log('Webhook: Enviando orden a Gelato')
-    await createGelatoOrderFromStripe(session.id)
-    console.log('Webhook: Orden enviada a Gelato exitosamente')
+    console.log('Webhook: Enviando orden a Printful')
+    await createPrintfulOrderFromStripe(session.id)
+    console.log('Webhook: Orden enviada a Printful exitosamente')
   } catch (error: any) {
-    console.error('Webhook: Error enviando a Gelato:', error.message)
-    // No fallar el webhook, la orden se puede enviar manualmente
+    console.error('Webhook: Error enviando a Printful:', error.message)
+    // No fallar el webhook (un 4xx/5xx haría que Stripe reintente y duplique la orden);
+    // queda registrado en WebhookLog como order_creation_failed y se puede reenviar a mano.
   }
 }
 

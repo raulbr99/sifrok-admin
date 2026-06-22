@@ -119,13 +119,8 @@ model Order {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  // Campos Gelato
-  gelatoOrderId     String?     @unique
-  gelatoStatus      String?     // created, passed, in_production, shipped, delivered, cancelled
-  gelatoTrackingUrl String?
-
   // Campos para profit calculation
-  productionCost    Float?      // Coste de Gelato
+  productionCost    Float?      // Coste de producción (Printful)
   stripeFee         Float?      // Comision Stripe (2.9% + 0.30)
   netProfit         Float?      // Profit neto calculado
 
@@ -287,13 +282,13 @@ enum TicketPriority {
   URGENT
 }
 
-// Mapeo de productos locales a Gelato
+// Mapeo de productos locales a Printful
 model ProductMapping {
   id               String   @id @default(cuid())
   localProductId   String   @unique  // ID del producto en tu sistema
-  gelatoProductUid String             // productUid de Gelato
+  printfulSyncVariantId Int?           // sync_variant_id de Printful (null = aún sin sincronizar)
   productName      String
-  basePrice        Float              // Precio base de Gelato (coste)
+  basePrice        Float              // Precio base / coste de producción
   salePrice        Float              // Precio de venta
   category         String?
   placements       String?  @db.Text  // JSON de placement configs
@@ -304,7 +299,7 @@ model ProductMapping {
 // Logs de webhooks para debugging y audit
 model WebhookLog {
   id          String   @id @default(cuid())
-  source      String   // 'stripe' | 'gelato'
+  source      String   // 'stripe' | 'printful'
   eventType   String   // checkout.session.completed, order_shipped, etc
   payload     String   @db.Text  // JSON del payload
   processed   Boolean  @default(false)

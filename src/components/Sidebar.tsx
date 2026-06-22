@@ -36,8 +36,8 @@ const adminItems = [
 
 const externalLinks = [
   {
-    href: 'https://dashboard.gelato.com',
-    label: 'Gelato Dashboard',
+    href: 'https://www.printful.com/dashboard',
+    label: 'Printful Dashboard',
     icon: Store,
   },
 ];

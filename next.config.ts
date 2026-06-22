@@ -9,10 +9,6 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'gelato-api-live.s3.eu-west-1.amazonaws.com',
-      },
-      {
-        protocol: 'https',
         hostname: 'i.imgur.com',
       },
       {

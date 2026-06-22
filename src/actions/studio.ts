@@ -68,14 +68,14 @@ export async function validateImageForPrint(
     return result
   }
 
-  // 2. Verificar que sea una URL valida para Gelato
-  // Gelato necesita URLs publicas y permanentes
+  // 2. Verificar que sea una URL valida para Printful
+  // Printful necesita URLs publicas y permanentes
   if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
     result.errors.push('La URL de imagen debe ser publica (no localhost)')
     result.isValid = false
   }
 
-  // 3. Verificar protocolo HTTPS (recomendado para Gelato)
+  // 3. Verificar protocolo HTTPS (recomendado para Printful)
   if (!imageUrl.startsWith('https://')) {
     result.warnings.push('Se recomienda usar URLs HTTPS para mejor compatibilidad')
   }

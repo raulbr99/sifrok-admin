@@ -119,7 +119,7 @@ export async function calculateOrderProfit(orderId: string): Promise<ProfitCalcu
   const salePrice = order.total
   const stripeFee = calculateStripeFee(salePrice)
 
-  // Obtener coste de produccion de Gelato via ProductMapping
+  // Obtener coste de produccion (Printful) via ProductMapping
   let productionCost = 0
   for (const item of order.orderItems) {
     const mapping = await prisma.productMapping.findUnique({

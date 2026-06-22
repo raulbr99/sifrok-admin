@@ -345,16 +345,16 @@ export default function DesignGeneratorPage() {
           </div>
         )}
 
-        {/* Quick Link to Gelato */}
+        {/* Quick Link to Printful */}
         <div className="text-center">
           <a
-            href="https://dashboard.gelato.com"
+            href="https://www.printful.com/dashboard"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
           >
             <ExternalLink className="w-4 h-4" />
-            Abrir Gelato Dashboard para subir diseños
+            Abrir Printful Dashboard para subir diseños
           </a>
         </div>
       </div>

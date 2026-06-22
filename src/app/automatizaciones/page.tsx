@@ -247,17 +247,17 @@ export default function BatchGeneratorPage() {
               </div>
             )}
 
-            {/* Link to Gelato */}
+            {/* Link to Printful */}
             {batchResults.filter(r => r.success).length > 0 && (
               <div className="mt-6 text-center border-t pt-4">
                 <a
-                  href="https://dashboard.gelato.com"
+                  href="https://www.printful.com/dashboard"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
                 >
                   <ExternalLink className="w-4 h-4" />
-                  Subir diseños a Gelato Dashboard
+                  Subir diseños a Printful Dashboard
                 </a>
               </div>
             )}
