@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useRef, useState } from 'react';
 import Modal from './Modal';
+import Button from './Button';
 
 export interface ConfirmOptions {
   title: string;
@@ -52,24 +53,12 @@ export function ConfirmProvider({ children }: { children: React.ReactNode }) {
         {opts?.message && <p className="text-sm text-gray-600">{opts.message}</p>}
         <div className="mt-5 flex justify-end gap-2">
           {/* Cancel first so it receives initial focus (safer default). */}
-          <button
-            type="button"
-            onClick={() => close(false)}
-            className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
-          >
+          <Button variant="secondary" onClick={() => close(false)}>
             {opts?.cancelLabel ?? 'Cancelar'}
-          </button>
-          <button
-            type="button"
-            onClick={() => close(true)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 ${
-              opts?.tone === 'danger'
-                ? 'bg-red-600 hover:bg-red-700 focus-visible:outline-red-600'
-                : 'bg-purple-600 hover:bg-purple-700 focus-visible:outline-purple-600'
-            }`}
-          >
+          </Button>
+          <Button variant={opts?.tone === 'danger' ? 'danger' : 'primary'} onClick={() => close(true)}>
             {opts?.confirmLabel ?? 'Confirmar'}
-          </button>
+          </Button>
         </div>
       </Modal>
     </ConfirmCtx.Provider>

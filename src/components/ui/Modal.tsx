@@ -99,15 +99,15 @@ export default function Modal({ open, onClose, title, description, children, siz
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
         tabIndex={-1}
-        className={`w-full ${SIZES[size]} max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-xl outline-none`}
+        className={`w-full ${SIZES[size]} max-h-[90vh] overflow-y-auto rounded-card border border-border bg-surface shadow-xl outline-none`}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-5">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-5">
           <div>
-            <h2 id={titleId} className="text-lg font-semibold text-gray-900">
+            <h2 id={titleId} className="text-lg font-semibold text-ink">
               {title}
             </h2>
             {description && (
-              <p id={descId} className="mt-1 text-sm text-gray-600">
+              <p id={descId} className="mt-1 text-sm text-ink-muted">
                 {description}
               </p>
             )}
@@ -116,7 +116,7 @@ export default function Modal({ open, onClose, title, description, children, siz
             type="button"
             onClick={onClose}
             aria-label="Cerrar"
-            className="rounded-md p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-600"
+            className="rounded-md p-1 text-ink-subtle hover:bg-surface-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             <X className="h-5 w-5" />
           </button>

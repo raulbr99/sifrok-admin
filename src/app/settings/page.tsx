@@ -14,6 +14,10 @@ import {
   X,
 } from 'lucide-react';
 import Link from 'next/link';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { inputClass } from '@/components/ui/Field';
 
 interface Model {
   id: string;
@@ -118,12 +122,8 @@ export default function SettingsPage() {
 
   // Static class maps so Tailwind never purges these (no dynamic template-literal class names)
   const SELECTED_CARD_CLASSES: Record<'text' | 'image', string> = {
-    text: 'border-purple-500 bg-purple-50',
-    image: 'border-pink-500 bg-pink-50',
-  };
-  const CHECK_COLOR: Record<'text' | 'image', string> = {
-    text: '#a855f7',
-    image: '#ec4899',
+    text: 'border-accent bg-surface-2',
+    image: 'border-accent bg-surface-2',
   };
 
   const ModelCard = ({
@@ -139,10 +139,10 @@ export default function SettingsPage() {
   }) => {
     return (
       <label
-        className={`relative flex items-start p-4 rounded-lg border-2 cursor-pointer transition-all ${
+        className={`relative flex items-start p-4 rounded-card border-2 cursor-pointer transition-colors ${
           isSelected
             ? SELECTED_CARD_CLASSES[type]
-            : 'border-gray-200 hover:border-gray-300'
+            : 'border-border bg-surface hover:border-border-strong'
         }`}
       >
         <input
@@ -156,40 +156,27 @@ export default function SettingsPage() {
         />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="font-bold text-gray-900 truncate">{model.name}</span>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded flex-shrink-0">
-              {model.provider}
-            </span>
-            {model.isFree && (
-              <span className="text-xs text-green-600 bg-green-100 px-2 py-0.5 rounded font-medium flex-shrink-0">
-                Gratis
-              </span>
-            )}
+            <span className="font-bold text-ink truncate">{model.name}</span>
+            <Badge tone="neutral">{model.provider}</Badge>
+            {model.isFree && <Badge tone="success">Gratis</Badge>}
           </div>
           {model.description && (
-            <p className="text-xs text-gray-500 mb-2 line-clamp-2">{model.description}</p>
+            <p className="text-xs text-ink-muted mb-2 line-clamp-2">{model.description}</p>
           )}
-          <div className="flex gap-3 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-xs text-gray-500">
+          <div className="flex gap-3 flex-wrap items-center">
+            <span className="inline-flex items-center gap-1 text-xs text-ink-muted">
               <Zap className="w-3 h-3" aria-hidden="true" />
               {model.contextLength > 0 ? `${(model.contextLength / 1000).toFixed(0)}K ctx` : 'N/A'}
             </span>
-            <span
-              className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded ${
-                model.isFree
-                  ? 'text-green-600 bg-green-100'
-                  : 'text-gray-600 bg-gray-100'
-              }`}
-            >
+            <Badge tone={model.isFree ? 'success' : 'neutral'}>
               <DollarSign className="w-3 h-3" aria-hidden="true" />
               {formatPrice(model.pricing.prompt)}
-            </span>
+            </Badge>
           </div>
         </div>
         {isSelected && (
           <Check
-            className="w-5 h-5 flex-shrink-0"
-            style={{ color: CHECK_COLOR[type] }}
+            className="w-5 h-5 flex-shrink-0 text-ink"
             aria-hidden="true"
           />
         )}
@@ -199,44 +186,44 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center" role="status" aria-live="polite">
-          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" aria-hidden="true" />
-          <p className="text-gray-600">Cargando modelos de OpenRouter...</p>
+          <Loader2 className="w-12 h-12 animate-spin text-ink mx-auto mb-4" aria-hidden="true" />
+          <p className="text-ink-muted">Cargando modelos de OpenRouter...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="py-8">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-purple-600 hover:underline text-sm mb-2 inline-block">
+          <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                <Settings className="w-8 h-8 text-gray-700" aria-hidden="true" />
+              <h1 className="text-3xl font-black text-ink flex items-center gap-3">
+                <Settings className="w-8 h-8 text-ink" aria-hidden="true" />
                 Configuración
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-ink-muted mt-2">
                 Selecciona los modelos de IA de OpenRouter
               </p>
             </div>
-            <button
+            <Button
+              variant="ghost"
               onClick={fetchModels}
               disabled={loading}
-              className="flex items-center gap-2 px-4 py-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
               Actualizar
-            </button>
+            </Button>
           </div>
           {lastUpdated && (
-            <p className="text-xs text-gray-600 mt-2">
+            <p className="text-xs text-ink-muted mt-2">
               Última actualización: {new Date(lastUpdated).toLocaleString()}
             </p>
           )}
@@ -245,38 +232,38 @@ export default function SettingsPage() {
         {error && (
           <div
             role="alert"
-            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"
+            className="bg-danger-bg border border-border text-danger px-4 py-3 rounded-card mb-6"
           >
             {error}
           </div>
         )}
 
         {/* Filter Options */}
-        <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6">
+        <Card className="p-4 mb-6">
           <label htmlFor="show-free-only" className="flex items-center gap-2 cursor-pointer">
             <input
               id="show-free-only"
               type="checkbox"
               checked={showFreeOnly}
               onChange={(e) => setShowFreeOnly(e.target.checked)}
-              className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+              className="w-4 h-4 accent-accent rounded"
             />
-            <span className="text-sm font-medium text-gray-700">
+            <span className="text-sm font-medium text-ink">
               Mostrar solo modelos gratuitos
             </span>
           </label>
-        </div>
+        </Card>
 
         {/* Text Model Selection */}
-        <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <Brain className="w-6 h-6 text-purple-600" aria-hidden="true" />
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-bold text-ink mb-2 flex items-center gap-2">
+            <Brain className="w-6 h-6 text-ink" aria-hidden="true" />
             Modelo de Texto
-            <span className="text-sm font-normal text-gray-500">
+            <span className="text-sm font-normal text-ink-muted">
               ({filteredTextModels.length} modelos)
             </span>
           </h2>
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-ink-muted text-sm mb-4">
             Usado para generar ideas y mejorar prompts
           </p>
 
@@ -285,20 +272,20 @@ export default function SettingsPage() {
             <label htmlFor="text-model-search" className="sr-only">
               Buscar modelo de texto
             </label>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-subtle" aria-hidden="true" />
             <input
               id="text-model-search"
               type="text"
               value={textSearch}
               onChange={(e) => setTextSearch(e.target.value)}
               placeholder="Buscar modelo..."
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
+              className={`${inputClass} pl-10 pr-10`}
             />
             {textSearch && (
               <button
                 onClick={() => setTextSearch('')}
                 aria-label="Limpiar búsqueda"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-subtle hover:text-ink"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -306,9 +293,9 @@ export default function SettingsPage() {
           </div>
 
           {/* Selected model indicator */}
-          <div className="mb-4 p-3 bg-purple-50 rounded-lg">
-            <p className="text-sm text-purple-700">
-              <strong>Seleccionado:</strong> {textModel}
+          <div className="mb-4 p-3 bg-surface-2 rounded-card">
+            <p className="text-sm text-ink-muted">
+              <strong className="text-ink">Seleccionado:</strong> {textModel}
             </p>
           </div>
 
@@ -324,23 +311,23 @@ export default function SettingsPage() {
                 />
               ))
             ) : (
-              <p className="text-gray-500 text-center py-8">
+              <p className="text-ink-muted text-center py-8">
                 No se encontraron modelos de texto
               </p>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Image Model Selection */}
-        <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-            <ImageIcon className="w-6 h-6 text-pink-600" aria-hidden="true" />
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-bold text-ink mb-2 flex items-center gap-2">
+            <ImageIcon className="w-6 h-6 text-ink" aria-hidden="true" />
             Modelo de Imagen
-            <span className="text-sm font-normal text-gray-500">
+            <span className="text-sm font-normal text-ink-muted">
               ({filteredImageModels.length} modelos)
             </span>
           </h2>
-          <p className="text-gray-600 text-sm mb-4">
+          <p className="text-ink-muted text-sm mb-4">
             Usado para generar diseños
           </p>
 
@@ -349,20 +336,20 @@ export default function SettingsPage() {
             <label htmlFor="image-model-search" className="sr-only">
               Buscar modelo de imagen
             </label>
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden="true" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-subtle" aria-hidden="true" />
             <input
               id="image-model-search"
               type="text"
               value={imageSearch}
               onChange={(e) => setImageSearch(e.target.value)}
               placeholder="Buscar modelo..."
-              className="w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
+              className={`${inputClass} pl-10 pr-10`}
             />
             {imageSearch && (
               <button
                 onClick={() => setImageSearch('')}
                 aria-label="Limpiar búsqueda"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-ink-subtle hover:text-ink"
               >
                 <X className="w-4 h-4" aria-hidden="true" />
               </button>
@@ -370,9 +357,9 @@ export default function SettingsPage() {
           </div>
 
           {/* Selected model indicator */}
-          <div className="mb-4 p-3 bg-pink-50 rounded-lg">
-            <p className="text-sm text-pink-700">
-              <strong>Seleccionado:</strong> {imageModel}
+          <div className="mb-4 p-3 bg-surface-2 rounded-card">
+            <p className="text-sm text-ink-muted">
+              <strong className="text-ink">Seleccionado:</strong> {imageModel}
             </p>
           </div>
 
@@ -388,25 +375,22 @@ export default function SettingsPage() {
                 />
               ))
             ) : (
-              <p className="text-gray-500 text-center py-8">
+              <p className="text-ink-muted text-center py-8">
                 No se encontraron modelos de imagen
               </p>
             )}
           </div>
-        </div>
+        </Card>
 
         {/* Save Button */}
-        <div className="flex justify-end gap-4 sticky bottom-4 bg-gray-50 py-4">
+        <div className="flex justify-end gap-4 sticky bottom-4 bg-bg py-4">
           <Link
             href="/"
-            className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium bg-white rounded-lg shadow-sm"
+            className="inline-flex items-center px-4 py-2 text-ink border border-border-strong bg-surface rounded-btn font-medium hover:bg-surface-2 transition-colors"
           >
             Cancelar
           </Link>
-          <button
-            onClick={handleSave}
-            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-bold hover:from-purple-700 hover:to-pink-700 transition-all flex items-center gap-2 shadow-lg"
-          >
+          <Button onClick={handleSave}>
             {saved ? (
               <>
                 <Check className="w-5 h-5" aria-hidden="true" />
@@ -415,21 +399,21 @@ export default function SettingsPage() {
             ) : (
               'Guardar Configuración'
             )}
-          </button>
+          </Button>
         </div>
 
         {/* Info */}
-        <div className="mt-8 bg-blue-50 rounded-xl p-6">
-          <h3 className="font-bold text-blue-900 mb-2">Sobre los modelos</h3>
-          <ul className="text-sm text-blue-800 space-y-2">
+        <div className="mt-8 bg-info-bg rounded-card p-6">
+          <h3 className="font-bold text-ink mb-2">Sobre los modelos</h3>
+          <ul className="text-sm text-ink-muted space-y-2">
             <li>
-              <strong>Modelos gratuitos:</strong> Perfectos para experimentar sin costo
+              <strong className="text-ink">Modelos gratuitos:</strong> Perfectos para experimentar sin costo
             </li>
             <li>
-              <strong>Modelos de pago:</strong> Mayor calidad, requieren créditos en OpenRouter
+              <strong className="text-ink">Modelos de pago:</strong> Mayor calidad, requieren créditos en OpenRouter
             </li>
             <li>
-              <strong>Contexto (ctx):</strong> Cantidad de tokens que puede procesar el modelo
+              <strong className="text-ink">Contexto (ctx):</strong> Cantidad de tokens que puede procesar el modelo
             </li>
             <li>
               Los modelos se actualizan automáticamente desde OpenRouter

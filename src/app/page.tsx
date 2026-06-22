@@ -5,6 +5,10 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Download, Sparkles, Wand2, RotateCcw, ExternalLink } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import PageHeader from '@/components/ui/PageHeader';
+import { inputClass } from '@/components/ui/Field';
 
 export default function DesignGeneratorPage() {
   const { data: session, status } = useSession();
@@ -169,10 +173,10 @@ export default function DesignGeneratorPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mx-auto mb-4"></div>
+          <p className="text-ink-muted">Cargando...</p>
         </div>
       </div>
     );
@@ -183,21 +187,19 @@ export default function DesignGeneratorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600 mb-2">
-            Generador de Diseños IA
-          </h1>
-          <p className="text-gray-600">Crea diseños únicos con inteligencia artificial</p>
-        </div>
+        <PageHeader
+          title="Generador de Diseños IA"
+          subtitle="Crea diseños únicos con inteligencia artificial"
+        />
 
         {/* Generator Card */}
-        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+        <Card className="p-8 mb-8">
           {/* Prompt Input */}
           <div className="mb-6">
-            <label htmlFor="ai-prompt" className="block mb-2 text-gray-700 font-bold text-lg">
+            <label htmlFor="ai-prompt" className="block mb-2 text-ink font-bold text-lg">
               Describe tu diseño
             </label>
             <textarea
@@ -205,14 +207,14 @@ export default function DesignGeneratorPage() {
               value={aiPrompt}
               onChange={(e) => setAiPrompt(e.target.value)}
               placeholder="Ej: Un gato espacial con colores neón, estilo cyberpunk, fondo transparente para camiseta..."
-              className="w-full p-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-purple-500 min-h-[120px] text-gray-900 bg-white resize-none placeholder-gray-500"
+              className={`${inputClass} min-h-[120px] resize-none`}
               disabled={generating || enhancing}
             />
           </div>
 
           {/* Enhance Instructions */}
           <div className="mb-6">
-            <label htmlFor="enhance-instructions" className="block mb-2 text-gray-600 font-medium text-sm">
+            <label htmlFor="enhance-instructions" className="block mb-2 text-ink-muted font-medium text-sm">
               Instrucciones para mejorar (opcional)
             </label>
             <input
@@ -221,85 +223,77 @@ export default function DesignGeneratorPage() {
               value={enhanceInstructions}
               onChange={(e) => setEnhanceInstructions(e.target.value)}
               placeholder="Ej: hazlo más minimalista, añade más detalles, estilo retro..."
-              className="w-full p-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-400 text-gray-900 bg-white placeholder-gray-500"
+              className={inputClass}
               disabled={generating || enhancing}
             />
           </div>
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-4 mb-6">
-            <button
+            <Button
+              variant="secondary"
               onClick={handleEnhancePrompt}
+              loading={enhancing}
               disabled={enhancing || generating || !aiPrompt.trim()}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 rounded-xl font-bold text-lg hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-4 text-lg"
             >
               {enhancing ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                  Mejorando...
-                </>
+                'Mejorando...'
               ) : (
                 <>
                   <Wand2 className="w-5 h-5" aria-hidden="true" />
                   Mejorar Prompt
                 </>
               )}
-            </button>
+            </Button>
 
-            <button
+            <Button
+              variant="primary"
               onClick={handleGenerateAI}
+              loading={generating}
               disabled={generating || enhancing || !aiPrompt.trim()}
-              className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="py-4 text-lg"
             >
               {generating ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                  Generando...
-                </>
+                'Generando...'
               ) : (
                 <>
                   <Sparkles className="w-5 h-5" aria-hidden="true" />
                   Generar Imagen
                 </>
               )}
-            </button>
+            </Button>
           </div>
 
           {/* Generated Image */}
           {generatedImage && (
-            <div className="border-2 border-gray-200 rounded-xl p-6 bg-gray-50" aria-live="polite">
+            <div className="border border-border rounded-card p-6 bg-surface-2" aria-live="polite">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Imagen Generada</h3>
+                <h3 className="text-xl font-bold text-ink">Imagen Generada</h3>
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => handleDownloadImage(generatedImage)}
-                    className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
+                  <Button variant="primary" onClick={() => handleDownloadImage(generatedImage)}>
                     <Download className="w-4 h-4" aria-hidden="true" />
                     Descargar
-                  </button>
-                  <button
-                    onClick={handleNewDesign}
-                    className="flex items-center gap-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-                  >
+                  </Button>
+                  <Button variant="secondary" onClick={handleNewDesign}>
                     <RotateCcw className="w-4 h-4" aria-hidden="true" />
                     Nuevo
-                  </button>
+                  </Button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 mb-4">
+              <div className="bg-surface border border-border rounded-card p-4 mb-4">
                 <img
                   src={generatedImage}
                   alt="Diseño generado con IA"
-                  className="max-w-full h-auto mx-auto rounded-lg"
+                  className="max-w-full h-auto mx-auto rounded-card"
                   style={{ maxHeight: '500px' }}
                 />
               </div>
 
               {/* Edit Section */}
-              <div className="bg-white rounded-lg p-4">
-                <label htmlFor="edit-prompt" className="block mb-2 text-gray-700 font-medium">
+              <div className="bg-surface border border-border rounded-card p-4">
+                <label htmlFor="edit-prompt" className="block mb-2 text-ink font-medium">
                   Editar imagen
                 </label>
                 <div className="flex gap-2">
@@ -309,46 +303,48 @@ export default function DesignGeneratorPage() {
                     value={editPrompt}
                     onChange={(e) => setEditPrompt(e.target.value)}
                     placeholder="Ej: cambia el fondo a azul, añade más brillo..."
-                    className="flex-1 p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-purple-500 text-gray-900 bg-white placeholder-gray-500"
+                    className={`${inputClass} flex-1`}
                     disabled={generating}
                   />
-                  <button
+                  <Button
+                    variant="primary"
                     onClick={handleEditImage}
+                    loading={generating}
                     disabled={generating || !editPrompt.trim()}
-                    className="bg-purple-500 hover:bg-purple-600 text-white px-6 py-3 rounded-lg font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6"
                   >
                     {generating ? '...' : 'Editar'}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </Card>
 
         {/* History */}
         {generatedImages.length > 0 && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Historial de esta sesión</h3>
+          <Card className="p-8 mb-8">
+            <h3 className="text-xl font-bold text-ink mb-4">Historial de esta sesión</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {generatedImages.map((img, index) => (
                 <div key={index} className="relative group">
                   <img
                     src={img}
                     alt={`Diseño ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                    className="w-full h-32 object-cover rounded-card cursor-pointer hover:opacity-80 transition-opacity"
                     onClick={() => setGeneratedImage(img)}
                   />
                   <button
                     onClick={() => handleDownloadImage(img)}
                     aria-label={`Descargar diseño ${index + 1}`}
-                    className="absolute bottom-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute bottom-2 right-2 bg-panel/70 hover:bg-panel text-on-panel p-2 rounded-btn opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Download className="w-4 h-4" aria-hidden="true" />
                   </button>
                 </div>
               ))}
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Quick Link to Printful */}
@@ -357,7 +353,7 @@ export default function DesignGeneratorPage() {
             href="https://www.printful.com/dashboard"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
+            className="inline-flex items-center gap-2 text-ink hover:text-ink-muted font-medium"
           >
             <ExternalLink className="w-4 h-4" aria-hidden="true" />
             Abrir Printful Dashboard para subir diseños

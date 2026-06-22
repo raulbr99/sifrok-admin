@@ -4,13 +4,11 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import {
-  Palette,
   Sparkles,
   Layers,
   LogOut,
   Store,
   Settings,
-  Bot,
   Shirt,
   FolderOpen,
   Lightbulb,
@@ -35,129 +33,107 @@ const adminItems = [
 ];
 
 const externalLinks = [
-  {
-    href: 'https://www.printful.com/dashboard',
-    label: 'Printful Dashboard',
-    icon: Store,
-  },
+  { href: 'https://www.printful.com/dashboard', label: 'Printful Dashboard', icon: Store },
 ];
+
+function NavLink({
+  href,
+  label,
+  Icon,
+  active,
+  external,
+}: {
+  href: string;
+  label: string;
+  Icon: typeof Sparkles;
+  active?: boolean;
+  external?: boolean;
+}) {
+  const cls = `relative flex items-center gap-3 rounded-btn px-3 py-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+    active
+      ? 'bg-panel-2 text-accent font-medium'
+      : 'text-on-panel-muted hover:bg-panel-2 hover:text-on-panel'
+  }`;
+  const inner = (
+    <>
+      {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-accent" aria-hidden="true" />}
+      <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
+      {label}
+    </>
+  );
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+        {inner}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} aria-current={active ? 'page' : undefined} className={cls}>
+      {inner}
+    </Link>
+  );
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-purple-700">
-        <h1 className="text-2xl font-black flex items-center gap-2">
-          <Sparkles className="w-7 h-7 text-yellow-400" />
+    <aside className="fixed left-0 top-0 flex h-screen w-64 flex-col border-r border-panel-border bg-panel text-on-panel">
+      <div className="border-b border-panel-border p-6">
+        <h1 className="flex items-center gap-2 text-2xl font-black tracking-tight">
+          <Sparkles className="h-7 w-7 text-accent" aria-hidden="true" />
           Sifrok Admin
         </h1>
-        <p className="text-purple-300 text-sm mt-1">Panel de Administración</p>
+        <p className="mt-1 text-sm text-on-panel-muted">Panel de Administración</p>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <p className="text-purple-400 text-xs uppercase font-bold mb-2 px-3">
-          Menu Principal
-        </p>
-        {menuItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-purple-700 text-white'
-                  : 'text-purple-200 hover:bg-purple-700/50 hover:text-white'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              {item.label}
-            </Link>
-          );
-        })}
+      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
+        <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Menu Principal</p>
+        {menuItems.map((item) => (
+          <NavLink key={item.href} href={item.href} label={item.label} Icon={item.icon} active={pathname === item.href} />
+        ))}
 
-        <div className="my-4 border-t border-purple-700" />
+        <div className="my-4 border-t border-panel-border" />
 
-        <p className="text-purple-400 text-xs uppercase font-bold mb-2 px-3">
-          Administracion
-        </p>
-        {adminItems.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              aria-current={isActive ? 'page' : undefined}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-all ${
-                isActive
-                  ? 'bg-purple-700 text-white'
-                  : 'text-purple-200 hover:bg-purple-700/50 hover:text-white'
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              {item.label}
-            </Link>
-          );
-        })}
+        <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Administracion</p>
+        {adminItems.map((item) => (
+          <NavLink key={item.href} href={item.href} label={item.label} Icon={item.icon} active={pathname === item.href} />
+        ))}
 
-        <div className="my-4 border-t border-purple-700" />
+        <div className="my-4 border-t border-panel-border" />
 
-        <p className="text-purple-400 text-xs uppercase font-bold mb-2 px-3">
-          Enlaces Externos
-        </p>
-        {externalLinks.map((item) => {
-          const Icon = item.icon;
-          return (
-            <a
-              key={item.href}
-              href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-purple-200 hover:bg-purple-700/50 hover:text-white transition-all"
-            >
-              <Icon className="w-5 h-5" />
-              {item.label}
-            </a>
-          );
-        })}
+        <p className="mb-2 px-3 text-xs font-bold uppercase tracking-wider text-on-panel-muted">Enlaces Externos</p>
+        {externalLinks.map((item) => (
+          <NavLink key={item.href} href={item.href} label={item.label} Icon={item.icon} external />
+        ))}
       </nav>
 
-      {/* User section */}
-      <div className="p-4 border-t border-purple-700">
+      <div className="border-t border-panel-border p-4">
         {session?.user ? (
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent font-bold text-accent-ink">
                 {session.user.name?.[0] || session.user.email?.[0] || 'A'}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium truncate">
-                  {session.user.name || 'Admin'}
-                </p>
-                <p className="text-purple-300 text-xs truncate">
-                  {session.user.email}
-                </p>
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium">{session.user.name || 'Admin'}</p>
+                <p className="truncate text-xs text-on-panel-muted">{session.user.email}</p>
               </div>
             </div>
             <button
               onClick={() => signOut()}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-purple-700 hover:bg-purple-600 rounded-lg transition-colors"
+              className="flex w-full items-center justify-center gap-2 rounded-btn bg-panel-2 px-3 py-2 text-sm transition-colors hover:bg-panel-border focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="h-4 w-4" aria-hidden="true" />
               Cerrar Sesión
             </button>
           </div>
         ) : (
           <Link
             href="/auth/login"
-            className="block w-full text-center px-3 py-2 bg-purple-600 hover:bg-purple-500 rounded-lg transition-colors"
+            className="block w-full rounded-btn bg-accent px-3 py-2 text-center font-semibold text-accent-ink transition-colors hover:bg-accent-hover"
           >
             Iniciar Sesión
           </Link>

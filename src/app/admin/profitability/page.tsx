@@ -12,6 +12,10 @@ import {
   ArrowDown,
 } from 'lucide-react'
 import { getProfitabilityStats } from '@/actions/orders'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
+import PageHeader from '@/components/ui/PageHeader'
+import { inputClass } from '@/components/ui/Field'
 
 interface Stats {
   totalRevenue: number
@@ -60,158 +64,152 @@ export default function ProfitabilityPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <TrendingUp className="w-8 h-8 text-purple-600" aria-hidden="true" />
-            Rentabilidad
-          </h1>
-          <p className="text-gray-600 mt-1">Analiza ingresos, costes y margenes de beneficio</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <label htmlFor="period-select" className="sr-only">
-            Periodo
-          </label>
-          <select
-            id="period-select"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
-          >
-            <option value="week">Ultima Semana</option>
-            <option value="month">Ultimo Mes</option>
-            <option value="year">Ultimo Anio</option>
-          </select>
-          <button
-            onClick={loadStats}
-            disabled={loading}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
-            Actualizar
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Rentabilidad"
+        subtitle="Analiza ingresos, costes y margenes de beneficio"
+        icon={TrendingUp}
+        actions={
+          <>
+            <label htmlFor="period-select" className="sr-only">
+              Periodo
+            </label>
+            <select
+              id="period-select"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value as 'week' | 'month' | 'year')}
+              className={`${inputClass} w-auto`}
+            >
+              <option value="week">Ultima Semana</option>
+              <option value="month">Ultimo Mes</option>
+              <option value="year">Ultimo Anio</option>
+            </select>
+            <Button onClick={loadStats} disabled={loading}>
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+              Actualizar
+            </Button>
+          </>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center py-20" role="status" aria-live="polite">
-          <RefreshCw className="w-8 h-8 animate-spin text-purple-600" aria-hidden="true" />
+          <RefreshCw className="w-8 h-8 animate-spin text-ink-muted" aria-hidden="true" />
           <span className="sr-only">Cargando estadisticas...</span>
         </div>
       ) : stats ? (
         <div className="space-y-8" aria-live="polite">
           {/* Main Stats */}
           <div className="grid grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-blue-600" aria-hidden="true" />
+                <div className="w-12 h-12 bg-info-bg rounded-card flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-info" aria-hidden="true" />
                 </div>
-                <span className="text-sm text-gray-600">Ingresos Totales</span>
+                <span className="text-sm text-ink-muted">Ingresos Totales</span>
               </div>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-sm text-gray-600 mt-2">{periodLabels[period]}</p>
-            </div>
+              <p className="text-3xl font-bold text-ink">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="text-sm text-ink-muted mt-2">{periodLabels[period]}</p>
+            </Card>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-orange-600" aria-hidden="true" />
+                <div className="w-12 h-12 bg-warning-bg rounded-card flex items-center justify-center">
+                  <Package className="w-6 h-6 text-warning" aria-hidden="true" />
                 </div>
-                <span className="text-sm text-gray-600">Costes Produccion</span>
+                <span className="text-sm text-ink-muted">Costes Produccion</span>
               </div>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalCosts)}</p>
-              <p className="text-sm text-gray-600 mt-2">Printful</p>
-            </div>
+              <p className="text-3xl font-bold text-ink">{formatCurrency(stats.totalCosts)}</p>
+              <p className="text-sm text-ink-muted mt-2">Printful</p>
+            </Card>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-purple-600" aria-hidden="true" />
+                <div className="w-12 h-12 bg-surface-2 rounded-card flex items-center justify-center">
+                  <CreditCard className="w-6 h-6 text-ink-muted" aria-hidden="true" />
                 </div>
-                <span className="text-sm text-gray-600">Comisiones Stripe</span>
+                <span className="text-sm text-ink-muted">Comisiones Stripe</span>
               </div>
-              <p className="text-3xl font-bold text-gray-900">{formatCurrency(stats.totalFees)}</p>
-              <p className="text-sm text-gray-600 mt-2">2.9% + 0.30 EUR</p>
-            </div>
+              <p className="text-3xl font-bold text-ink">{formatCurrency(stats.totalFees)}</p>
+              <p className="text-sm text-ink-muted mt-2">2.9% + 0.30 EUR</p>
+            </Card>
 
-            <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg">
+            <Card className="p-6 bg-accent border-transparent">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                  <TrendingUp className="w-6 h-6" aria-hidden="true" />
+                <div className="w-12 h-12 bg-accent-ink/10 rounded-card flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6 text-accent-ink" aria-hidden="true" />
                 </div>
-                <span className="text-sm opacity-80">Beneficio Neto</span>
+                <span className="text-sm text-accent-ink/80">Beneficio Neto</span>
               </div>
-              <p className="text-3xl font-bold">{formatCurrency(stats.netProfit)}</p>
-              <div className="flex items-center gap-2 mt-2">
+              <p className="text-3xl font-bold text-accent-ink">{formatCurrency(stats.netProfit)}</p>
+              <div className="flex items-center gap-2 mt-2 text-accent-ink">
                 <Percent className="w-4 h-4" aria-hidden="true" />
                 <span className="text-sm">Margen: {stats.margin.toFixed(1)}%</span>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Secondary Stats */}
           <div className="grid grid-cols-3 gap-6">
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Pedidos</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.orderCount}</p>
+                  <p className="text-sm text-ink-muted mb-1">Total Pedidos</p>
+                  <p className="text-2xl font-bold text-ink">{stats.orderCount}</p>
                 </div>
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <Package className="w-6 h-6 text-gray-600" aria-hidden="true" />
+                <div className="w-12 h-12 bg-surface-2 rounded-card flex items-center justify-center">
+                  <Package className="w-6 h-6 text-ink-muted" aria-hidden="true" />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Ticket Medio</p>
-                  <p className="text-2xl font-bold text-gray-900">{formatCurrency(stats.avgOrderValue)}</p>
+                  <p className="text-sm text-ink-muted mb-1">Ticket Medio</p>
+                  <p className="text-2xl font-bold text-ink">{formatCurrency(stats.avgOrderValue)}</p>
                 </div>
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-gray-600" aria-hidden="true" />
+                <div className="w-12 h-12 bg-surface-2 rounded-card flex items-center justify-center">
+                  <DollarSign className="w-6 h-6 text-ink-muted" aria-hidden="true" />
                 </div>
               </div>
-            </div>
+            </Card>
 
-            <div className="bg-white rounded-xl p-6 shadow-sm">
+            <Card className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Profit Medio por Pedido</p>
-                  <p className={`text-2xl font-bold ${stats.avgProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className="text-sm text-ink-muted mb-1">Profit Medio por Pedido</p>
+                  <p className={`text-2xl font-bold ${stats.avgProfit >= 0 ? 'text-success' : 'text-danger'}`}>
                     {formatCurrency(stats.avgProfit)}
                   </p>
                 </div>
-                <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${stats.avgProfit >= 0 ? 'bg-green-100' : 'bg-red-100'}`}>
+                <div className={`w-12 h-12 rounded-card flex items-center justify-center ${stats.avgProfit >= 0 ? 'bg-success-bg' : 'bg-danger-bg'}`}>
                   {stats.avgProfit >= 0 ? (
-                    <ArrowUp className="w-6 h-6 text-green-600" aria-hidden="true" />
+                    <ArrowUp className="w-6 h-6 text-success" aria-hidden="true" />
                   ) : (
-                    <ArrowDown className="w-6 h-6 text-red-600" aria-hidden="true" />
+                    <ArrowDown className="w-6 h-6 text-danger" aria-hidden="true" />
                   )}
                 </div>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Breakdown */}
-          <div className="bg-white rounded-xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Desglose de Costes</h2>
+          <Card className="p-6">
+            <h2 className="text-lg font-semibold text-ink mb-4">Desglose de Costes</h2>
             <div className="space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Costes de Produccion (Printful)</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm text-ink-muted">Costes de Produccion (Printful)</span>
+                  <span className="text-sm font-medium text-ink">
                     {stats.totalRevenue > 0
                       ? ((stats.totalCosts / stats.totalRevenue) * 100).toFixed(1)
                       : 0}
                     %
                   </span>
                 </div>
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-orange-500 rounded-full"
+                    className="h-full bg-warning rounded-full"
                     style={{
                       width: `${stats.totalRevenue > 0 ? (stats.totalCosts / stats.totalRevenue) * 100 : 0}%`,
                     }}
@@ -221,17 +219,17 @@ export default function ProfitabilityPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Comisiones Stripe</span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm text-ink-muted">Comisiones Stripe</span>
+                  <span className="text-sm font-medium text-ink">
                     {stats.totalRevenue > 0
                       ? ((stats.totalFees / stats.totalRevenue) * 100).toFixed(1)
                       : 0}
                     %
                   </span>
                 </div>
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-purple-500 rounded-full"
+                    className="h-full bg-info rounded-full"
                     style={{
                       width: `${stats.totalRevenue > 0 ? (stats.totalFees / stats.totalRevenue) * 100 : 0}%`,
                     }}
@@ -241,12 +239,12 @@ export default function ProfitabilityPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-gray-600">Beneficio Neto</span>
-                  <span className="text-sm font-medium">{stats.margin.toFixed(1)}%</span>
+                  <span className="text-sm text-ink-muted">Beneficio Neto</span>
+                  <span className="text-sm font-medium text-ink">{stats.margin.toFixed(1)}%</span>
                 </div>
-                <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${stats.margin >= 0 ? 'bg-green-500' : 'bg-red-500'}`}
+                    className={`h-full rounded-full ${stats.margin >= 0 ? 'bg-success' : 'bg-danger'}`}
                     style={{
                       width: `${Math.abs(stats.margin)}%`,
                     }}
@@ -254,27 +252,27 @@ export default function ProfitabilityPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </Card>
 
           {/* Formula */}
-          <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
-            <h3 className="text-sm font-semibold text-gray-700 mb-3">Formula de Calculo</h3>
-            <div className="font-mono text-sm text-gray-600">
+          <div className="bg-surface-2 rounded-card p-6 border border-border">
+            <h3 className="text-sm font-semibold text-ink-muted mb-3">Formula de Calculo</h3>
+            <div className="font-mono text-sm text-ink-muted">
               <p>
-                <span className="text-green-600 font-semibold">Beneficio Neto</span> ={' '}
-                <span className="text-blue-600">Ingresos ({formatCurrency(stats.totalRevenue)})</span> -{' '}
-                <span className="text-orange-600">Coste produccion Printful ({formatCurrency(stats.totalCosts)})</span> -{' '}
-                <span className="text-purple-600">Comisiones Stripe ({formatCurrency(stats.totalFees)})</span>
+                <span className="text-success font-semibold">Beneficio Neto</span> ={' '}
+                <span className="text-info">Ingresos ({formatCurrency(stats.totalRevenue)})</span> -{' '}
+                <span className="text-warning">Coste produccion Printful ({formatCurrency(stats.totalCosts)})</span> -{' '}
+                <span className="text-ink">Comisiones Stripe ({formatCurrency(stats.totalFees)})</span>
               </p>
               <p className="mt-2">
-                <span className="text-green-600 font-semibold">Beneficio Neto</span> ={' '}
-                <span className="font-bold">{formatCurrency(stats.netProfit)}</span>
+                <span className="text-success font-semibold">Beneficio Neto</span> ={' '}
+                <span className="font-bold text-ink">{formatCurrency(stats.netProfit)}</span>
               </p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="text-center py-20 text-gray-600" role="alert">No se pudieron cargar las estadisticas</div>
+        <div className="text-center py-20 text-ink-muted" role="alert">No se pudieron cargar las estadisticas</div>
       )}
     </div>
   )

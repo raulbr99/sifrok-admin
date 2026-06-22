@@ -11,8 +11,6 @@ import {
   Image as ImageIcon,
   Download,
   ExternalLink,
-  Copy,
-  Check,
   X,
   Sparkles,
 } from 'lucide-react';
@@ -20,6 +18,10 @@ import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { inputClass } from '@/components/ui/Field';
 
 interface Design {
   id: string;
@@ -210,55 +212,49 @@ export default function CollectionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-purple-600 hover:underline text-sm mb-2 inline-block">
+          <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-                <FolderOpen className="w-8 h-8 text-purple-600" aria-hidden="true" />
+              <h1 className="text-3xl font-black text-ink flex items-center gap-3">
+                <FolderOpen className="w-8 h-8 text-ink" aria-hidden="true" />
                 Colecciones
               </h1>
-              <p className="text-gray-600 mt-2">
+              <p className="text-ink-muted mt-2">
                 Gestiona tus colecciones de diseños y paletas de colores
               </p>
             </div>
-            <button
-              onClick={() => setShowNewModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
+            <Button onClick={() => setShowNewModal(true)}>
               <Plus className="w-5 h-5" aria-hidden="true" />
               Nueva Colección
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* Collections Grid */}
         {collections.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center">
-            <FolderOpen className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
-            <h3 className="text-xl font-bold text-gray-700 mb-2">No hay colecciones</h3>
-            <p className="text-gray-500 mb-4">Crea tu primera colección para organizar tus diseños</p>
-            <button
-              onClick={() => setShowNewModal(true)}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
+          <Card className="p-12 text-center">
+            <FolderOpen className="w-16 h-16 mx-auto mb-4 text-ink-subtle" aria-hidden="true" />
+            <h3 className="text-xl font-bold text-ink mb-2">No hay colecciones</h3>
+            <p className="text-ink-muted mb-4">Crea tu primera colección para organizar tus diseños</p>
+            <Button onClick={() => setShowNewModal(true)}>
               Crear Colección
-            </button>
-          </div>
+            </Button>
+          </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {collections.map((collection) => (
-              <div
+              <Card
                 key={collection.id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className="overflow-hidden hover:border-border-strong transition-colors"
               >
                 {/* Preview */}
-                <div className="h-32 bg-gradient-to-br from-purple-100 to-pink-100 relative">
+                <div className="h-32 bg-surface-2 relative">
                   {collection.designs.length > 0 ? (
                     <div className="absolute inset-0 grid grid-cols-3 gap-1 p-2">
                       {collection.designs.slice(0, 3).map((design) => (
@@ -272,7 +268,7 @@ export default function CollectionsPage() {
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <ImageIcon className="w-12 h-12 text-purple-300" aria-hidden="true" />
+                      <ImageIcon className="w-12 h-12 text-ink-subtle" aria-hidden="true" />
                     </div>
                   )}
 
@@ -290,12 +286,12 @@ export default function CollectionsPage() {
 
                 {/* Content */}
                 <div className="p-4">
-                  <h3 className="font-bold text-gray-900 mb-1">{collection.name}</h3>
-                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                  <h3 className="font-bold text-ink mb-1">{collection.name}</h3>
+                  <p className="text-sm text-ink-muted mb-3 line-clamp-2">
                     {collection.description || 'Sin descripción'}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+                  <div className="flex items-center gap-4 text-xs text-ink-muted mb-3">
                     <span className="flex items-center gap-1">
                       <ImageIcon className="w-3 h-3" aria-hidden="true" />
                       {collection.designs.length} diseños
@@ -311,29 +307,30 @@ export default function CollectionsPage() {
                   </div>
 
                   <div className="flex gap-2">
-                    <button
+                    <Button
+                      size="sm"
                       onClick={() => setSelectedCollection(collection)}
-                      className="flex-1 px-3 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700"
+                      className="flex-1"
                     >
                       Ver Detalles
-                    </button>
+                    </Button>
                     <button
                       onClick={() => startEditing(collection)}
                       aria-label="Editar"
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                      className="p-2 text-ink-muted hover:bg-surface-2 rounded-btn"
                     >
                       <Edit3 className="w-4 h-4" aria-hidden="true" />
                     </button>
                     <button
                       onClick={() => deleteCollection(collection.id)}
                       aria-label="Eliminar"
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                      className="p-2 text-danger hover:bg-danger-bg rounded-btn"
                     >
                       <Trash2 className="w-4 h-4" aria-hidden="true" />
                     </button>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))}
           </div>
         )}
@@ -353,7 +350,7 @@ export default function CollectionsPage() {
             {/* Name & Description */}
             <div className="space-y-4">
               <div>
-                <label htmlFor="collection-name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="collection-name" className="block text-sm font-medium text-ink mb-1">
                   Nombre *
                 </label>
                 <input
@@ -362,11 +359,11 @@ export default function CollectionsPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Ej: Colección Verano 2025"
-                  className="w-full p-3 border rounded-lg text-gray-900 bg-white"
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label htmlFor="collection-description" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="collection-description" className="block text-sm font-medium text-ink mb-1">
                   Descripción
                 </label>
                 <textarea
@@ -375,31 +372,31 @@ export default function CollectionsPage() {
                   onChange={(e) => setNewDescription(e.target.value)}
                   placeholder="Describe tu colección..."
                   rows={2}
-                  className="w-full p-3 border rounded-lg text-gray-900 bg-white resize-none"
+                  className={`${inputClass} resize-none`}
                 />
               </div>
             </div>
 
             {/* Color Palette */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-ink mb-2">
                 Paleta de Colores
               </label>
               <div className="flex flex-wrap gap-2 mb-3">
                 {newColors.map((color, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-full"
+                    className="flex items-center gap-2 px-3 py-1 bg-surface-2 rounded-full"
                   >
                     <div
-                      className="w-5 h-5 rounded-full border"
+                      className="w-5 h-5 rounded-full border border-border"
                       style={{ backgroundColor: color.hex }}
                     />
-                    <span className="text-sm">{color.name}</span>
+                    <span className="text-sm text-ink">{color.name}</span>
                     <button
                       onClick={() => setNewColors(newColors.filter((_, i) => i !== index))}
                       aria-label={`Eliminar color ${color.name}`}
-                      className="text-gray-500 hover:text-red-500"
+                      className="p-2 text-ink-muted hover:text-danger"
                     >
                       <X className="w-4 h-4" aria-hidden="true" />
                     </button>
@@ -413,7 +410,7 @@ export default function CollectionsPage() {
                   value={newColorHex}
                   onChange={(e) => setNewColorHex(e.target.value)}
                   aria-label="Seleccionar color"
-                  className="w-12 h-10 rounded cursor-pointer"
+                  className="w-12 h-10 rounded-btn cursor-pointer border border-border-strong"
                 />
                 <input
                   id="collection-color-name"
@@ -422,20 +419,17 @@ export default function CollectionsPage() {
                   onChange={(e) => setNewColorName(e.target.value)}
                   placeholder="Nombre del color"
                   aria-label="Nombre del color"
-                  className="flex-1 p-2 border rounded-lg text-gray-900 bg-white"
+                  className={`${inputClass} flex-1`}
                 />
-                <button
-                  onClick={addColor}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                >
+                <Button onClick={addColor}>
                   Añadir
-                </button>
+                </Button>
               </div>
             </div>
 
             {/* Garment Types */}
             <div>
-              <span className="block text-sm font-medium text-gray-700 mb-2">
+              <span className="block text-sm font-medium text-ink mb-2">
                 Tipos de Prenda
               </span>
               <div className="grid grid-cols-4 gap-2">
@@ -444,10 +438,10 @@ export default function CollectionsPage() {
                     key={garment.id}
                     onClick={() => toggleGarment(garment.id)}
                     aria-pressed={newGarments.includes(garment.id)}
-                    className={`p-3 rounded-lg text-center transition-colors ${
+                    className={`p-3 rounded-btn text-center transition-colors ${
                       newGarments.includes(garment.id)
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-purple-100'
+                        ? 'bg-accent text-accent-ink'
+                        : 'bg-surface-2 text-ink-muted hover:bg-surface'
                     }`}
                   >
                     <span className="text-2xl block mb-1" aria-hidden="true">{garment.icon}</span>
@@ -457,23 +451,20 @@ export default function CollectionsPage() {
               </div>
             </div>
 
-            <div className="border-t pt-6 flex justify-end gap-3">
-              <button
+            <div className="border-t border-border pt-6 flex justify-end gap-3">
+              <Button
+                variant="ghost"
                 onClick={() => {
                   setShowNewModal(false);
                   setEditingCollection(null);
                   resetForm();
                 }}
-                className="px-6 py-2 text-gray-600 hover:bg-gray-200 rounded-lg"
               >
                 Cancelar
-              </button>
-              <button
-                onClick={editingCollection ? updateCollection : createCollection}
-                className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-medium"
-              >
+              </Button>
+              <Button onClick={editingCollection ? updateCollection : createCollection}>
                 {editingCollection ? 'Guardar Cambios' : 'Crear Colección'}
-              </button>
+              </Button>
             </div>
           </div>
         </Modal>
@@ -490,20 +481,20 @@ export default function CollectionsPage() {
             <>
                 {/* Color Palette */}
                 <div className="mb-6">
-                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-purple-600" aria-hidden="true" />
+                  <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                    <Palette className="w-5 h-5 text-ink" aria-hidden="true" />
                     Paleta de Colores
                   </h3>
                   <div className="flex flex-wrap gap-3">
                     {selectedCollection.colors.map((color, index) => (
-                      <div key={index} className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
+                      <div key={index} className="flex items-center gap-2 px-4 py-2 bg-surface-2 rounded-btn">
                         <div
-                          className="w-8 h-8 rounded-lg border"
+                          className="w-8 h-8 rounded-btn border border-border"
                           style={{ backgroundColor: color.hex }}
                         />
                         <div>
-                          <p className="font-medium text-sm">{color.name}</p>
-                          <p className="text-xs text-gray-500">{color.hex}</p>
+                          <p className="font-medium text-sm text-ink">{color.name}</p>
+                          <p className="text-xs text-ink-muted">{color.hex}</p>
                         </div>
                       </div>
                     ))}
@@ -512,20 +503,17 @@ export default function CollectionsPage() {
 
                 {/* Garment Types */}
                 <div className="mb-6">
-                  <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                    <Shirt className="w-5 h-5 text-purple-600" aria-hidden="true" />
+                  <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                    <Shirt className="w-5 h-5 text-ink" aria-hidden="true" />
                     Prendas
                   </h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedCollection.garmentTypes.map((gId) => {
                       const garment = GARMENT_OPTIONS.find((g) => g.id === gId);
                       return garment ? (
-                        <span
-                          key={gId}
-                          className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
-                        >
+                        <Badge key={gId} tone="neutral">
                           <span aria-hidden="true">{garment.icon}</span> {garment.name}
-                        </span>
+                        </Badge>
                       ) : null;
                     })}
                   </div>
@@ -534,13 +522,13 @@ export default function CollectionsPage() {
                 {/* Designs */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                      <ImageIcon className="w-5 h-5 text-purple-600" aria-hidden="true" />
+                    <h3 className="font-bold text-ink flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5 text-ink" aria-hidden="true" />
                       Diseños ({selectedCollection.designs.length})
                     </h3>
                     <Link
                       href="/studio"
-                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"
+                      className="inline-flex items-center gap-2 px-3 py-1.5 bg-accent text-accent-ink rounded-btn text-sm font-semibold hover:bg-accent-hover transition-colors"
                     >
                       <Plus className="w-4 h-4" aria-hidden="true" />
                       Añadir Diseño
@@ -548,12 +536,12 @@ export default function CollectionsPage() {
                   </div>
 
                   {selectedCollection.designs.length === 0 ? (
-                    <div className="bg-gray-50 rounded-xl p-8 text-center">
-                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-gray-300" aria-hidden="true" />
-                      <p className="text-gray-500">No hay diseños en esta colección</p>
+                    <div className="bg-surface-2 rounded-card p-8 text-center">
+                      <Sparkles className="w-12 h-12 mx-auto mb-3 text-ink-subtle" aria-hidden="true" />
+                      <p className="text-ink-muted">No hay diseños en esta colección</p>
                       <Link
                         href="/"
-                        className="inline-block mt-3 text-purple-600 hover:underline"
+                        className="inline-block mt-3 text-ink-muted hover:text-ink underline"
                       >
                         Ir al Generador
                       </Link>
@@ -563,7 +551,7 @@ export default function CollectionsPage() {
                       {selectedCollection.designs.map((design) => (
                         <div
                           key={design.id}
-                          className="relative group bg-gray-100 rounded-lg overflow-hidden aspect-square"
+                          className="relative group bg-surface-2 rounded-card overflow-hidden aspect-square"
                         >
                           <img
                             src={design.imageUrl}
@@ -572,7 +560,7 @@ export default function CollectionsPage() {
                           />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                             <button
-                              className="p-2 bg-white rounded-lg hover:bg-gray-100"
+                              className="p-2 bg-surface rounded-btn hover:bg-surface-2"
                               title="Editar en Studio"
                               aria-label="Editar en Studio"
                             >
@@ -580,7 +568,7 @@ export default function CollectionsPage() {
                             </button>
                             <button
                               onClick={() => removeDesignFromCollection(selectedCollection.id, design.id)}
-                              className="p-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                              className="p-2 bg-danger text-white rounded-btn hover:brightness-110"
                               title="Eliminar"
                               aria-label="Eliminar"
                             >
@@ -594,16 +582,16 @@ export default function CollectionsPage() {
                 </div>
 
                 {/* Export */}
-                <div className="mt-6 pt-6 border-t flex gap-3">
-                  <button className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
+                <div className="mt-6 pt-6 border-t border-border flex gap-3">
+                  <Button variant="secondary">
                     <Download className="w-4 h-4" aria-hidden="true" />
                     Exportar Colección
-                  </button>
+                  </Button>
                   <a
                     href="https://www.printful.com/dashboard"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-surface text-ink border border-border-strong rounded-btn text-sm font-medium hover:bg-surface-2 transition-colors"
                   >
                     <ExternalLink className="w-4 h-4" aria-hidden="true" />
                     Subir a Printful

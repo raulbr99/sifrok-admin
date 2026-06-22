@@ -17,6 +17,10 @@ import {
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
+import PageHeader from '@/components/ui/PageHeader'
+import Field, { inputClass } from '@/components/ui/Field'
 
 // Utility function to calculate margin
 function calculateMargin(basePrice: number, salePrice: number): number {
@@ -138,29 +142,24 @@ export default function ProductsPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Tags className="w-8 h-8 text-purple-600" aria-hidden="true" />
-            Mapeo de Productos
-          </h1>
-          <p className="text-gray-500 mt-1">Conecta tus productos locales con Printful</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
+      <PageHeader
+        title="Mapeo de Productos"
+        subtitle="Conecta tus productos locales con Printful"
+        icon={Tags}
+        actions={
+          <Button
+            variant="primary"
             onClick={() => {
               resetForm()
               setEditingId(null)
               setShowForm(true)
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
             Nuevo Mapeo
-          </button>
-        </div>
-      </div>
+          </Button>
+        }
+      />
 
       {/* Form Modal */}
       <Modal
@@ -173,38 +172,29 @@ export default function ProductsPage() {
         size="md"
       >
         <div className="space-y-4">
-          <div>
-            <label htmlFor="product-name" className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre del Producto
-            </label>
+          <Field label="Nombre del Producto" htmlFor="product-name">
             <input
               id="product-name"
               type="text"
               value={formData.productName}
               onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className={inputClass}
               placeholder="Camiseta Basica Blanca"
             />
-          </div>
+          </Field>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="product-local-id" className="block text-sm font-medium text-gray-700 mb-1">
-                ID Local
-              </label>
+            <Field label="ID Local" htmlFor="product-local-id">
               <input
                 id="product-local-id"
                 type="text"
                 value={formData.localProductId}
                 onChange={(e) => setFormData({ ...formData, localProductId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
                 placeholder="prod_123"
               />
-            </div>
-            <div>
-              <label htmlFor="product-variant-id" className="block text-sm font-medium text-gray-700 mb-1">
-                Printful Sync Variant ID
-              </label>
+            </Field>
+            <Field label="Printful Sync Variant ID" htmlFor="product-variant-id">
               <input
                 id="product-variant-id"
                 type="number"
@@ -216,129 +206,115 @@ export default function ProductsPage() {
                       e.target.value === '' ? undefined : parseInt(e.target.value, 10),
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
                 placeholder="4567890123"
               />
-            </div>
+            </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="product-base-price" className="block text-sm font-medium text-gray-700 mb-1">
-                Precio Base (Coste Printful)
-              </label>
+            <Field label="Precio Base (Coste Printful)" htmlFor="product-base-price">
               <input
                 id="product-base-price"
                 type="number"
                 step="0.01"
                 value={formData.basePrice}
                 onChange={(e) => setFormData({ ...formData, basePrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
                 placeholder="12.00"
               />
-            </div>
-            <div>
-              <label htmlFor="product-sale-price" className="block text-sm font-medium text-gray-700 mb-1">
-                Precio de Venta
-              </label>
+            </Field>
+            <Field label="Precio de Venta" htmlFor="product-sale-price">
               <input
                 id="product-sale-price"
                 type="number"
                 step="0.01"
                 value={formData.salePrice}
                 onChange={(e) => setFormData({ ...formData, salePrice: parseFloat(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className={inputClass}
                 placeholder="29.99"
               />
-            </div>
+            </Field>
           </div>
 
           {formData.basePrice > 0 && formData.salePrice > 0 && (
-            <div className="p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600">
+            <div className="p-3 bg-surface-2 rounded-card">
+              <p className="text-sm text-ink-muted">
                 Margen estimado:{' '}
-                <span className={`font-semibold ${calculateMargin(formData.basePrice, formData.salePrice) >= 30 ? 'text-green-600' : 'text-orange-600'}`}>
+                <span className={`font-semibold ${calculateMargin(formData.basePrice, formData.salePrice) >= 30 ? 'text-success' : 'text-warning'}`}>
                   {calculateMargin(formData.basePrice, formData.salePrice).toFixed(1)}%
                 </span>
               </p>
             </div>
           )}
 
-          <div>
-            <label htmlFor="product-category" className="block text-sm font-medium text-gray-700 mb-1">
-              Categoria (opcional)
-            </label>
+          <Field label="Categoria (opcional)" htmlFor="product-category">
             <input
               id="product-category"
               type="text"
               value={formData.category || ''}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className={inputClass}
               placeholder="camisetas"
             />
-          </div>
+          </Field>
         </div>
 
         <div className="flex items-center justify-end gap-3 mt-6">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={() => {
               setShowForm(false)
               setEditingId(null)
             }}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
           >
             Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
+          </Button>
+          <Button variant="primary" onClick={handleSave}>
             <Save className="w-4 h-4" aria-hidden="true" />
             Guardar
-          </button>
+          </Button>
         </div>
       </Modal>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface border border-border rounded-card overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-surface-2 border-b border-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Producto
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 ID Local
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Printful Variant ID
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Coste
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Venta
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Margen
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
                 Acciones
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-muted">
                   Cargando productos...
                 </td>
               </tr>
             ) : mappings.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-muted">
                   No hay mapeos de productos. Crea uno para empezar.
                 </td>
               </tr>
@@ -346,66 +322,60 @@ export default function ProductsPage() {
               mappings.map((mapping) => {
                 const margin = calculateMargin(mapping.basePrice, mapping.salePrice)
                 return (
-                  <tr key={mapping.id} className="hover:bg-gray-50">
+                  <tr key={mapping.id} className="hover:bg-surface-2">
                     <td className="px-4 py-3">
                       <div>
-                        <p className="font-medium text-gray-900">{mapping.productName}</p>
+                        <p className="font-medium text-ink">{mapping.productName}</p>
                         {mapping.category && (
-                          <p className="text-xs text-gray-500">{mapping.category}</p>
+                          <p className="text-xs text-ink-muted">{mapping.category}</p>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded">
                         {mapping.localProductId}
                       </code>
                     </td>
                     <td className="px-4 py-3">
                       {mapping.printfulSyncVariantId != null ? (
-                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                        <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded">
                           {mapping.printfulSyncVariantId}
                         </code>
                       ) : (
-                        <span className="text-xs text-gray-600">Sin sincronizar</span>
+                        <span className="text-xs text-ink-muted">Sin sincronizar</span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-ink-muted">
                       {mapping.basePrice.toFixed(2)} EUR
                     </td>
-                    <td className="px-4 py-3 font-medium">
+                    <td className="px-4 py-3 font-medium text-ink">
                       {mapping.salePrice.toFixed(2)} EUR
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          margin >= 30
-                            ? 'bg-green-100 text-green-800'
-                            : margin >= 20
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
+                      <Badge tone={margin >= 30 ? 'success' : margin >= 20 ? 'warning' : 'danger'}>
                         {margin.toFixed(1)}%
-                      </span>
+                      </Badge>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleEdit(mapping)}
-                          className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                          className="p-2 text-ink-muted hover:text-info"
                           aria-label={`Editar ${mapping.productName}`}
                         >
                           <Pencil className="w-4 h-4" aria-hidden="true" />
-                        </button>
-                        <button
-                          type="button"
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleDelete(mapping.id)}
-                          className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
+                          className="p-2 text-ink-muted hover:text-danger"
                           aria-label={`Eliminar ${mapping.productName}`}
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
-                        </button>
+                        </Button>
                       </div>
                     </td>
                   </tr>

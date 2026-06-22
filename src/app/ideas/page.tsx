@@ -13,6 +13,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { inputClass } from '@/components/ui/Field';
 
 interface Idea {
   title: string;
@@ -123,18 +127,18 @@ export default function IdeasPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="py-8">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-purple-600 hover:underline text-sm mb-2 inline-block">
+          <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <Lightbulb className="w-8 h-8 text-yellow-500" aria-hidden="true" />
+          <h1 className="text-3xl font-black text-ink flex items-center gap-3">
+            <Lightbulb className="w-8 h-8 text-ink" aria-hidden="true" />
             Generador de Ideas
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-ink-muted mt-2">
             Genera ideas creativas para diseños usando IA
           </p>
         </div>
@@ -142,16 +146,16 @@ export default function IdeasPage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Form */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 sticky top-8">
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-600" aria-hidden="true" />
+            <Card className="p-6 sticky top-8">
+              <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-ink" aria-hidden="true" />
                 Configuración
               </h2>
 
               <div className="space-y-4">
                 {/* Theme Selection */}
                 <div>
-                  <label htmlFor="idea-theme" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-theme" className="block text-sm font-medium text-ink mb-2">
                     Tema
                   </label>
                   <select
@@ -161,7 +165,7 @@ export default function IdeasPage() {
                       setTheme(e.target.value);
                       setCustomTheme('');
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className={inputClass}
                   >
                     <option value="">Selecciona un tema</option>
                     {THEMES.map((t) => (
@@ -172,7 +176,7 @@ export default function IdeasPage() {
 
                 {/* Custom Theme */}
                 <div>
-                  <label htmlFor="idea-custom-theme" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-custom-theme" className="block text-sm font-medium text-ink mb-2">
                     O escribe tu propio tema
                   </label>
                   <input
@@ -184,20 +188,20 @@ export default function IdeasPage() {
                       setTheme('');
                     }}
                     placeholder="Ej: Gatos astronautas, Flores mecánicas..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white placeholder-gray-500"
+                    className={inputClass}
                   />
                 </div>
 
                 {/* Style */}
                 <div>
-                  <label htmlFor="idea-style" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-style" className="block text-sm font-medium text-ink mb-2">
                     Estilo
                   </label>
                   <select
                     id="idea-style"
                     value={style}
                     onChange={(e) => setStyle(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className={inputClass}
                   >
                     {STYLES.map((s) => (
                       <option key={s.id} value={s.id}>{s.name}</option>
@@ -207,14 +211,14 @@ export default function IdeasPage() {
 
                 {/* Count */}
                 <div>
-                  <label htmlFor="idea-count" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="idea-count" className="block text-sm font-medium text-ink mb-2">
                     Cantidad de ideas
                   </label>
                   <select
                     id="idea-count"
                     value={count}
                     onChange={(e) => setCount(Number(e.target.value))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-gray-900 bg-white"
+                    className={inputClass}
                   >
                     {[3, 5, 8, 10].map((n) => (
                       <option key={n} value={n}>{n} ideas</option>
@@ -223,79 +227,78 @@ export default function IdeasPage() {
                 </div>
 
                 {/* Generate Button */}
-                <button
+                <Button
                   onClick={handleGenerate}
-                  disabled={loading || (!theme && !customTheme.trim())}
-                  className="w-full py-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg font-bold hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={!theme && !customTheme.trim()}
+                  loading={loading}
+                  className="w-full"
                 >
                   {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                      Generando...
-                    </>
+                    'Generando...'
                   ) : (
                     <>
                       <Lightbulb className="w-5 h-5" aria-hidden="true" />
                       Generar Ideas
                     </>
                   )}
-                </button>
+                </Button>
 
                 {/* Settings Link */}
                 <Link
                   href="/settings"
-                  className="block text-center text-sm text-purple-600 hover:text-purple-800"
+                  className="block text-center text-sm text-ink-muted hover:text-ink"
                 >
                   Configurar modelo de IA
                 </Link>
               </div>
-            </div>
+            </Card>
           </div>
 
           {/* Results */}
           <div className="lg:col-span-2" aria-live="polite">
             {ideas.length === 0 && !loading && (
-              <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-12 text-center">
-                <Lightbulb className="w-16 h-16 mx-auto mb-4 text-gray-300" aria-hidden="true" />
-                <p className="text-gray-500">Las ideas generadas aparecerán aquí</p>
-                <p className="text-gray-600 text-sm mt-2">
+              <Card className="p-12 text-center">
+                <Lightbulb className="w-16 h-16 mx-auto mb-4 text-ink-subtle" aria-hidden="true" />
+                <p className="text-ink-muted">Las ideas generadas aparecerán aquí</p>
+                <p className="text-ink-subtle text-sm mt-2">
                   Selecciona un tema y haz clic en "Generar Ideas"
                 </p>
-              </div>
+              </Card>
             )}
 
             {loading && (
-              <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-12 text-center">
-                <Loader2 className="w-16 h-16 mx-auto mb-4 text-yellow-500 animate-spin" aria-hidden="true" />
-                <p className="text-gray-600">Generando ideas creativas...</p>
-                <p className="text-gray-600 text-sm mt-2">Esto puede tardar unos segundos</p>
-              </div>
+              <Card className="p-12 text-center">
+                <Loader2 className="w-16 h-16 mx-auto mb-4 text-ink animate-spin" aria-hidden="true" />
+                <p className="text-ink-muted">Generando ideas creativas...</p>
+                <p className="text-ink-subtle text-sm mt-2">Esto puede tardar unos segundos</p>
+              </Card>
             )}
 
             {ideas.length > 0 && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-ink">
                     {ideas.length} ideas generadas
                   </h3>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     onClick={handleGenerate}
                     disabled={loading}
-                    className="flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
                   >
                     <RefreshCw className="w-4 h-4" aria-hidden="true" />
                     Regenerar
-                  </button>
+                  </Button>
                 </div>
 
                 {ideas.map((idea, index) => (
-                  <div
+                  <Card
                     key={index}
-                    className="bg-white rounded-xl shadow-sm border border-purple-100 p-6 hover:border-purple-300 transition-colors"
+                    className="p-6 hover:border-border-strong transition-colors"
                   >
                     <div className="flex items-start justify-between mb-3">
-                      <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <span className="w-6 h-6 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-sm font-bold">
+                      <h4 className="text-lg font-bold text-ink flex items-center gap-2">
+                        <span className="w-6 h-6 bg-accent text-accent-ink rounded-full flex items-center justify-center text-sm font-bold">
                           {index + 1}
                         </span>
                         {idea.title}
@@ -303,45 +306,42 @@ export default function IdeasPage() {
                       <div className="flex gap-2">
                         <button
                           onClick={() => copyPrompt(idea.prompt, index)}
-                          className="p-2 text-gray-500 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                          className="p-2 text-ink-muted hover:text-ink hover:bg-surface-2 rounded-btn transition-colors"
                           title="Copiar prompt"
                           aria-label={copiedIndex === index ? 'Prompt copiado' : 'Copiar prompt'}
                         >
                           {copiedIndex === index ? (
-                            <Check className="w-4 h-4 text-green-500" aria-hidden="true" />
+                            <Check className="w-4 h-4 text-success" aria-hidden="true" />
                           ) : (
                             <Copy className="w-4 h-4" aria-hidden="true" />
                           )}
                         </button>
-                        <button
+                        <Button
+                          size="sm"
                           onClick={() => usePrompt(idea.prompt)}
-                          className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 text-white rounded-lg text-sm font-medium transition-colors"
                           title="Usar en generador"
                         >
                           <Wand2 className="w-3 h-3" aria-hidden="true" />
                           Usar
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
-                    <p className="text-gray-700 text-sm mb-3 bg-gray-50 p-3 rounded-lg font-mono">
+                    <p className="text-ink-muted text-sm mb-3 bg-surface-2 p-3 rounded-btn font-mono">
                       {idea.prompt}
                     </p>
 
                     {idea.tags && idea.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {idea.tags.map((tag, tagIndex) => (
-                          <span
-                            key={tagIndex}
-                            className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full"
-                          >
+                          <Badge key={tagIndex} tone="neutral">
                             <Tag className="w-3 h-3" aria-hidden="true" />
                             {tag}
-                          </span>
+                          </Badge>
                         ))}
                       </div>
                     )}
-                  </div>
+                  </Card>
                 ))}
               </div>
             )}

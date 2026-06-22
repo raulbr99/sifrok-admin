@@ -13,6 +13,10 @@ import {
   Clock,
 } from 'lucide-react';
 import AdminExportButton from '@/components/AdminExportButton';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import PageHeader from '@/components/ui/PageHeader';
 
 interface Stats {
   overview: {
@@ -88,28 +92,30 @@ export default function AdminDashboard() {
     }).format(amount);
   };
 
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      PENDING: 'bg-yellow-100 text-yellow-800',
-      PAID: 'bg-blue-100 text-blue-800',
-      PROCESSING: 'bg-purple-100 text-purple-800',
-      SHIPPED: 'bg-indigo-100 text-indigo-800',
-      DELIVERED: 'bg-green-100 text-green-800',
-      CANCELLED: 'bg-red-100 text-red-800',
-      FAILED: 'bg-gray-100 text-gray-800',
+  const getStatusTone = (
+    status: string
+  ): 'success' | 'danger' | 'warning' | 'info' | 'neutral' => {
+    const tones: Record<string, 'success' | 'danger' | 'warning' | 'info' | 'neutral'> = {
+      PENDING: 'warning',
+      PAID: 'info',
+      PROCESSING: 'info',
+      SHIPPED: 'info',
+      DELIVERED: 'success',
+      CANCELLED: 'danger',
+      FAILED: 'neutral',
     };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+    return tones[status] || 'neutral';
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen p-8">
         <div className="max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-200 rounded w-48" />
+            <div className="h-8 bg-surface-2 rounded w-48" />
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="h-32 bg-gray-200 rounded-xl" />
+                <div key={i} className="h-32 bg-surface-2 rounded-card" />
               ))}
             </div>
           </div>
@@ -120,15 +126,12 @@ export default function AdminDashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center" role="alert">
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={fetchStats}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg"
-          >
+          <p className="text-danger mb-4">{error}</p>
+          <Button variant="primary" onClick={fetchStats}>
             Reintentar
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -137,133 +140,130 @@ export default function AdminDashboard() {
   if (!stats) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-black text-gray-900">Dashboard</h1>
-          <AdminExportButton />
-        </div>
+        <PageHeader title="Dashboard" actions={<AdminExportButton />} />
 
         {/* Overview cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Ingresos Totales</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-ink-muted">Ingresos Totales</p>
+                <p className="text-2xl font-bold text-ink">
                   {formatCurrency(stats.overview.totalRevenue)}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-green-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-success-bg rounded-full flex items-center justify-center">
+                <DollarSign className="w-6 h-6 text-success" aria-hidden="true" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
               {stats.thisMonth.revenueChange >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" aria-hidden="true" />
+                <TrendingUp className="w-4 h-4 text-success mr-1" aria-hidden="true" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" aria-hidden="true" />
+                <TrendingDown className="w-4 h-4 text-danger mr-1" aria-hidden="true" />
               )}
               <span
                 className={
                   stats.thisMonth.revenueChange >= 0
-                    ? 'text-green-600'
-                    : 'text-red-600'
+                    ? 'text-success'
+                    : 'text-danger'
                 }
               >
                 {stats.thisMonth.revenueChange >= 0 ? '+' : ''}
                 {stats.thisMonth.revenueChange}%
               </span>
-              <span className="text-gray-600 ml-2">vs mes anterior</span>
+              <span className="text-ink-muted ml-2">vs mes anterior</span>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pedidos Totales</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-ink-muted">Pedidos Totales</p>
+                <p className="text-2xl font-bold text-ink">
                   {stats.overview.totalOrders}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <ShoppingBag className="w-6 h-6 text-purple-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-surface-2 rounded-full flex items-center justify-center">
+                <ShoppingBag className="w-6 h-6 text-ink" aria-hidden="true" />
               </div>
             </div>
             <div className="mt-4 flex items-center text-sm">
               {stats.thisMonth.ordersChange >= 0 ? (
-                <TrendingUp className="w-4 h-4 text-green-500 mr-1" aria-hidden="true" />
+                <TrendingUp className="w-4 h-4 text-success mr-1" aria-hidden="true" />
               ) : (
-                <TrendingDown className="w-4 h-4 text-red-500 mr-1" aria-hidden="true" />
+                <TrendingDown className="w-4 h-4 text-danger mr-1" aria-hidden="true" />
               )}
               <span
                 className={
                   stats.thisMonth.ordersChange >= 0
-                    ? 'text-green-600'
-                    : 'text-red-600'
+                    ? 'text-success'
+                    : 'text-danger'
                 }
               >
                 {stats.thisMonth.ordersChange >= 0 ? '+' : ''}
                 {stats.thisMonth.ordersChange}%
               </span>
-              <span className="text-gray-600 ml-2">vs mes anterior</span>
+              <span className="text-ink-muted ml-2">vs mes anterior</span>
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Usuarios</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-ink-muted">Usuarios</p>
+                <p className="text-2xl font-bold text-ink">
                   {stats.overview.totalUsers}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-info-bg rounded-full flex items-center justify-center">
+                <Users className="w-6 h-6 text-info" aria-hidden="true" />
               </div>
             </div>
-            <div className="mt-4 text-sm text-gray-600">
+            <div className="mt-4 text-sm text-ink-muted">
               +{stats.thisMonth.newUsers} este mes
             </div>
-          </div>
+          </Card>
 
-          <div className="bg-white rounded-xl shadow-sm p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pendientes de Envío</p>
-                <p className="text-2xl font-bold text-gray-900">
+                <p className="text-sm text-ink-muted">Pendientes de Envío</p>
+                <p className="text-2xl font-bold text-ink">
                   {stats.overview.pendingOrders}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Package className="w-6 h-6 text-orange-600" aria-hidden="true" />
+              <div className="w-12 h-12 bg-warning-bg rounded-full flex items-center justify-center">
+                <Package className="w-6 h-6 text-warning" aria-hidden="true" />
               </div>
             </div>
-            <div className="mt-4 text-sm text-gray-600">
+            <div className="mt-4 text-sm text-ink-muted">
               Requieren atención
             </div>
-          </div>
+          </Card>
         </div>
 
         {/* Today stats */}
-        <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl shadow-sm p-6 mb-8 text-white">
-          <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+        <div className="bg-panel rounded-card border border-panel-border p-6 mb-8 text-on-panel">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-accent">
             <Clock className="w-5 h-5" aria-hidden="true" />
             Hoy
           </h2>
           <div className="grid grid-cols-3 gap-6">
             <div>
-              <p className="text-purple-200">Pedidos</p>
+              <p className="text-on-panel-muted">Pedidos</p>
               <p className="text-3xl font-bold">{stats.today.orders}</p>
             </div>
             <div>
-              <p className="text-purple-200">Ingresos</p>
+              <p className="text-on-panel-muted">Ingresos</p>
               <p className="text-3xl font-bold">
                 {formatCurrency(stats.today.revenue)}
               </p>
             </div>
             <div>
-              <p className="text-purple-200">Nuevos Usuarios</p>
+              <p className="text-on-panel-muted">Nuevos Usuarios</p>
               <p className="text-3xl font-bold">{stats.today.newUsers}</p>
             </div>
           </div>
@@ -271,22 +271,22 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Top products */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <Card className="p-6">
+            <h2 className="text-lg font-bold text-ink mb-4">
               Top Productos (30 días)
             </h2>
             {stats.topProducts.length > 0 ? (
               <div className="space-y-4">
                 {stats.topProducts.map((product, index) => (
                   <div key={product.productId} className="flex items-center gap-4">
-                    <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center font-bold text-purple-600">
+                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-accent-ink">
                       {index + 1}
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900 truncate">
+                      <p className="font-medium text-ink truncate">
                         {product.name}
                       </p>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-ink-muted">
                         {product.quantity} unidades en {product.orders} pedidos
                       </p>
                     </div>
@@ -294,13 +294,13 @@ export default function AdminDashboard() {
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600">No hay datos aún</p>
+              <p className="text-ink-muted">No hay datos aún</p>
             )}
-          </div>
+          </Card>
 
           {/* Recent orders */}
-          <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">
+          <Card className="p-6">
+            <h2 className="text-lg font-bold text-ink mb-4">
               Pedidos Recientes
             </h2>
             {stats.recentOrders.length > 0 ? (
@@ -308,31 +308,27 @@ export default function AdminDashboard() {
                 {stats.recentOrders.slice(0, 5).map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-3 bg-surface-2 rounded-card"
                   >
                     <div>
-                      <p className="font-medium text-gray-900">
+                      <p className="font-medium text-ink">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </p>
-                      <p className="text-sm text-gray-600">{order.customer}</p>
+                      <p className="text-sm text-ink-muted">{order.customer}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-medium">{formatCurrency(order.total)}</p>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${getStatusColor(
-                          order.status
-                        )}`}
-                      >
+                      <p className="font-medium text-ink">{formatCurrency(order.total)}</p>
+                      <Badge tone={getStatusTone(order.status)}>
                         {order.status}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-600">No hay pedidos aún</p>
+              <p className="text-ink-muted">No hay pedidos aún</p>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>

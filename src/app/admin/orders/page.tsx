@@ -28,6 +28,10 @@ import { processRefund } from '@/actions/stripe'
 import { syncPrintfulOrderStatus } from '@/actions/printful'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
+import Button from '@/components/ui/Button'
+import Badge from '@/components/ui/Badge'
+import PageHeader from '@/components/ui/PageHeader'
+import { inputClass } from '@/components/ui/Field'
 
 interface Order {
   id: string
@@ -56,25 +60,27 @@ interface Order {
   }>
 }
 
-const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  PAID: 'bg-blue-100 text-blue-800',
-  PROCESSING: 'bg-purple-100 text-purple-800',
-  SHIPPED: 'bg-indigo-100 text-indigo-800',
-  DELIVERED: 'bg-green-100 text-green-800',
-  CANCELLED: 'bg-red-100 text-red-800',
-  FAILED: 'bg-gray-100 text-gray-800',
+type BadgeTone = 'neutral' | 'success' | 'danger' | 'warning' | 'info' | 'accent'
+
+const statusTones: Record<string, BadgeTone> = {
+  PENDING: 'warning',
+  PAID: 'info',
+  PROCESSING: 'accent',
+  SHIPPED: 'info',
+  DELIVERED: 'success',
+  CANCELLED: 'danger',
+  FAILED: 'neutral',
 }
 
-const printfulStatusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-800',
-  pending: 'bg-blue-100 text-blue-800',
-  inprocess: 'bg-purple-100 text-purple-800',
-  onhold: 'bg-yellow-100 text-yellow-800',
-  fulfilled: 'bg-green-100 text-green-800',
-  shipped: 'bg-indigo-100 text-indigo-800',
-  canceled: 'bg-red-100 text-red-800',
-  failed: 'bg-red-100 text-red-800',
+const printfulStatusTones: Record<string, BadgeTone> = {
+  draft: 'neutral',
+  pending: 'info',
+  inprocess: 'accent',
+  onhold: 'warning',
+  fulfilled: 'success',
+  shipped: 'info',
+  canceled: 'danger',
+  failed: 'danger',
 }
 
 export default function OrdersPage() {
@@ -175,7 +181,7 @@ export default function OrdersPage() {
         cell: ({ row }) => (
           <div>
             <p className="font-medium">{row.original.user.name || 'Sin nombre'}</p>
-            <p className="text-xs text-gray-500">{row.original.user.email}</p>
+            <p className="text-xs text-ink-muted">{row.original.user.email}</p>
           </div>
         ),
       },
@@ -201,39 +207,31 @@ export default function OrdersPage() {
         accessorKey: 'status',
         header: 'Estado Pago',
         cell: ({ row }) => (
-          <span
-            className={`px-2 py-1 rounded-full text-xs font-medium ${
-              statusColors[row.original.status] || 'bg-gray-100'
-            }`}
-          >
+          <Badge tone={statusTones[row.original.status] || 'neutral'}>
             {row.original.status}
-          </span>
+          </Badge>
         ),
       },
       {
         accessorKey: 'printfulStatus',
         header: 'Estado Printful',
         cell: ({ row }) => (
-          <div className="flex flex-col gap-1">
-            <span
-              className={`w-fit px-2 py-1 rounded-full text-xs font-medium ${
-                printfulStatusColors[row.original.printfulStatus || ''] || 'bg-gray-100 text-gray-700'
-              }`}
-            >
+          <div className="flex flex-col items-start gap-1">
+            <Badge tone={printfulStatusTones[row.original.printfulStatus || ''] || 'neutral'}>
               {row.original.printfulStatus || 'No enviado'}
-            </span>
+            </Badge>
             {row.original.trackingNumber && (
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-ink-muted">
                 {row.original.carrier ? `${row.original.carrier}: ` : ''}
                 {row.original.trackingUrl ? (
                   <a
                     href={row.original.trackingUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                    className="inline-flex items-center gap-1 text-ink hover:underline"
                   >
                     {row.original.trackingNumber}
-                    <ExternalLink className="w-3 h-3" />
+                    <ExternalLink className="w-3 h-3" aria-hidden="true" />
                   </a>
                 ) : (
                   <span className="font-mono">{row.original.trackingNumber}</span>
@@ -241,7 +239,7 @@ export default function OrdersPage() {
               </span>
             )}
             {row.original.shippedAt && (
-              <span className="text-xs text-gray-600">
+              <span className="text-xs text-ink-muted">
                 Enviado {row.original.shippedAt.toLocaleDateString('es-ES', {
                   day: '2-digit',
                   month: 'short',
@@ -266,10 +264,10 @@ export default function OrdersPage() {
         cell: ({ row }) => {
           const profit = row.original.netProfit
           if (profit === null) {
-            return <span className="text-gray-600 text-xs">Sin calcular</span>
+            return <span className="text-ink-muted text-xs">Sin calcular</span>
           }
           return (
-            <span className={`font-semibold ${profit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <span className={`font-semibold ${profit >= 0 ? 'text-success' : 'text-danger'}`}>
               {profit.toFixed(2)} EUR
             </span>
           )
@@ -302,39 +300,42 @@ export default function OrdersPage() {
         header: 'Acciones',
         cell: ({ row }) => (
           <div className="flex items-center gap-1">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => handleCalculateProfit(row.original.id)}
               disabled={processingId === row.original.id}
-              className="p-1.5 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded"
+              className="p-2 text-ink-muted hover:text-success"
               title="Calcular profit"
               aria-label="Calcular profit"
             >
               <DollarSign className="w-4 h-4" aria-hidden="true" />
-            </button>
+            </Button>
             {row.original.printfulOrderId && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleSyncPrintful(row.original.id)}
                 disabled={processingId === row.original.id}
-                className="p-1.5 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                className="p-2 text-ink-muted hover:text-info"
                 title="Sincronizar Printful"
                 aria-label="Sincronizar Printful"
               >
                 <Truck className="w-4 h-4" aria-hidden="true" />
-              </button>
+              </Button>
             )}
             {row.original.status !== 'CANCELLED' && row.original.stripePaymentId && (
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleRefund(row.original.id)}
                 disabled={processingId === row.original.id}
-                className="p-1.5 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded"
+                className="p-2 text-ink-muted hover:text-danger"
                 title="Reembolsar"
                 aria-label="Reembolsar"
               >
                 <XCircle className="w-4 h-4" aria-hidden="true" />
-              </button>
+              </Button>
             )}
           </div>
         ),
@@ -360,24 +361,17 @@ export default function OrdersPage() {
 
   return (
     <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <Package className="w-8 h-8 text-purple-600" aria-hidden="true" />
-            Pedidos
-          </h1>
-          <p className="text-gray-500 mt-1">Gestiona pedidos, estados y reembolsos</p>
-        </div>
-        <button
-          type="button"
-          onClick={loadOrders}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
-        >
-          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
-          Actualizar
-        </button>
-      </div>
+      <PageHeader
+        title="Pedidos"
+        subtitle="Gestiona pedidos, estados y reembolsos"
+        icon={Package}
+        actions={
+          <Button variant="primary" onClick={loadOrders} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} aria-hidden="true" />
+            Actualizar
+          </Button>
+        }
+      />
 
       {/* Search */}
       <div className="mb-6">
@@ -386,7 +380,7 @@ export default function OrdersPage() {
             Buscar pedidos
           </label>
           <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-subtle z-10"
             aria-hidden="true"
           />
           <input
@@ -395,16 +389,16 @@ export default function OrdersPage() {
             placeholder="Buscar por ID, email o nombre..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className={`${inputClass} pl-10`}
           />
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+      <div className="bg-surface border border-border rounded-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-surface-2 border-b border-border">
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => {
@@ -420,7 +414,7 @@ export default function OrdersPage() {
                       <th
                         key={header.id}
                         aria-sort={ariaSort}
-                        className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"
+                        className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider"
                       >
                         {header.isPlaceholder
                           ? null
@@ -431,22 +425,22 @@ export default function OrdersPage() {
                 </tr>
               ))}
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={columns.length} className="px-4 py-8 text-center text-ink-muted">
                     Cargando pedidos...
                   </td>
                 </tr>
               ) : table.getRowModel().rows.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan={columns.length} className="px-4 py-8 text-center text-ink-muted">
                     No hay pedidos
                   </td>
                 </tr>
               ) : (
                 table.getRowModel().rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr key={row.id} className="hover:bg-surface-2">
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} className="px-4 py-3">
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -460,8 +454,8 @@ export default function OrdersPage() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200">
-          <div className="text-sm text-gray-500">
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+          <div className="text-sm text-ink-muted">
             Mostrando {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + 1} a{' '}
             {Math.min(
               (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
@@ -470,27 +464,29 @@ export default function OrdersPage() {
             de {table.getFilteredRowModel().rows.length} pedidos
           </div>
           <div className="flex items-center gap-2">
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50"
+              className="p-2 text-ink-muted"
               aria-label="Pagina anterior"
             >
               <ChevronLeft className="w-5 h-5" aria-hidden="true" />
-            </button>
-            <span className="text-sm text-gray-600">
+            </Button>
+            <span className="text-sm text-ink-muted">
               Pagina {table.getState().pagination.pageIndex + 1} de {table.getPageCount()}
             </span>
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
-              className="p-2 text-gray-600 hover:bg-gray-100 rounded disabled:opacity-50"
+              className="p-2 text-ink-muted"
               aria-label="Pagina siguiente"
             >
               <ChevronRight className="w-5 h-5" aria-hidden="true" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

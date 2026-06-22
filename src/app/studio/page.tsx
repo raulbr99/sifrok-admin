@@ -32,6 +32,10 @@ import Link from 'next/link';
 import { validateImageForPrint, getValidationRequirements } from '@/actions/studio';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import { inputClass } from '@/components/ui/Field';
 
 // Garment types with their placement areas
 const GARMENT_TYPES = [
@@ -515,43 +519,41 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-surface border-b border-border sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/" className="text-purple-600 hover:text-purple-800">
+              <Link href="/" className="text-ink-muted hover:text-ink">
                 ← Volver
               </Link>
-              <h1 className="text-2xl font-black text-gray-900 flex items-center gap-2">
-                <Shirt className="w-6 h-6 text-purple-600" aria-hidden="true" />
+              <h1 className="text-2xl font-bold tracking-tight text-ink flex items-center gap-2">
+                <Shirt className="w-6 h-6 text-ink" aria-hidden="true" />
                 Design Studio
               </h1>
             </div>
             <div className="flex items-center gap-4">
               {completedDesigns > 0 && (
-                <span className="text-sm text-gray-600">
+                <span className="text-sm text-ink-muted">
                   {completedDesigns}/{totalPlacements} diseños
                 </span>
               )}
-              <button
+              <Button
+                variant="primary"
                 onClick={handleValidateAndSave}
                 disabled={completedDesigns === 0 || isValidating}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                loading={isValidating}
               >
                 {isValidating ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                    Validando...
-                  </>
+                  'Validando...'
                 ) : (
                   <>
                     <Save className="w-4 h-4" aria-hidden="true" />
                     Guardar Coleccion
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -559,12 +561,12 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
 
       <div className="container mx-auto px-4 py-6">
         {/* Step 1: Select Garment & Describe Design */}
-        <div className="bg-white rounded-xl p-6 shadow-sm mb-6">
+        <Card className="p-6 mb-6">
           <div className="grid lg:grid-cols-2 gap-6">
             {/* Left: Garment Selection */}
             <div>
-              <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm" aria-hidden="true">1</span>
+              <h2 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
+                <span className="bg-accent text-accent-ink w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold" aria-hidden="true">1</span>
                 Selecciona el Producto
               </h2>
               <div className="grid grid-cols-5 gap-2">
@@ -572,10 +574,10 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   <button
                     key={garment.id}
                     onClick={() => setGarmentType(garment.id)}
-                    className={`p-3 rounded-lg text-center transition-all ${
+                    className={`p-3 rounded-btn text-center transition-colors border ${
                       garmentType === garment.id
-                        ? 'bg-purple-600 text-white ring-2 ring-purple-300'
-                        : 'bg-gray-100 text-gray-700 hover:bg-purple-100'
+                        ? 'bg-accent text-accent-ink border-accent'
+                        : 'bg-surface-2 text-ink-muted border-border hover:bg-surface'
                     }`}
                   >
                     <span className="text-2xl block mb-1">{garment.icon}</span>
@@ -583,15 +585,15 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-ink-subtle mt-2">
                 {currentGarment?.placements.length} ubicaciones de diseño
               </p>
             </div>
 
             {/* Right: Design Prompt */}
             <div>
-              <h2 id="design-prompt-heading" className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                <span className="bg-purple-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-sm" aria-hidden="true">2</span>
+              <h2 id="design-prompt-heading" className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
+                <span className="bg-accent text-accent-ink w-6 h-6 rounded-full flex items-center justify-center text-sm font-semibold" aria-hidden="true">2</span>
                 Describe tu Diseño
               </h2>
               <label htmlFor="design-prompt" className="sr-only">
@@ -602,42 +604,41 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 value={designPrompt}
                 onChange={(e) => setDesignPrompt(e.target.value)}
                 placeholder="Describe el tema de tu diseño... Ej: Estilo japonés minimalista con olas y monte Fuji, colores azul y blanco"
-                className="w-full p-4 border-2 border-purple-200 rounded-lg text-sm resize-none h-24 focus:outline-none focus:border-purple-500 bg-white text-gray-900 placeholder-gray-500"
+                className={`${inputClass} resize-none h-24`}
                 disabled={isGenerating}
                 aria-invalid={generationError ? true : undefined}
                 aria-describedby={generationError ? 'design-prompt-error' : undefined}
               />
               {generationError && (
-                <p id="design-prompt-error" role="alert" className="text-red-500 text-sm mt-2">{generationError}</p>
+                <p id="design-prompt-error" role="alert" className="text-danger text-sm mt-2">{generationError}</p>
               )}
-              <button
+              <Button
+                variant="primary"
                 onClick={handleGenerateAllDesigns}
                 disabled={isGenerating || !designPrompt.trim()}
-                className="w-full mt-3 p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-bold text-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+                loading={isGenerating}
+                className="w-full mt-3 py-4 text-base"
               >
                 {isGenerating ? (
-                  <>
-                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
-                    Generando... {generationProgress}%
-                  </>
+                  <>Generando... {generationProgress}%</>
                 ) : (
                   <>
                     <Wand2 className="w-6 h-6" aria-hidden="true" />
                     Generar Diseño Completo ({currentGarment?.placements.length} ubicaciones)
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Main Content: Placement Grid & Preview */}
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Left: Placement Designs Grid */}
           <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Grid3X3 className="w-5 h-5 text-purple-600" aria-hidden="true" />
+            <Card className="p-4">
+              <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                <Grid3X3 className="w-5 h-5 text-ink" aria-hidden="true" />
                 Ubicaciones ({completedDesigns}/{totalPlacements})
               </h3>
               <div className="grid grid-cols-2 gap-3">
@@ -648,16 +649,16 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     <div
                       key={pd.placement}
                       onClick={() => setSelectedPlacement(pd.placement)}
-                      className={`relative aspect-square rounded-lg border-2 overflow-hidden cursor-pointer transition-all ${
+                      className={`relative aspect-square rounded-card border-2 overflow-hidden cursor-pointer transition-colors ${
                         selectedPlacement === pd.placement
-                          ? 'border-purple-600 ring-2 ring-purple-300'
-                          : 'border-gray-200 hover:border-purple-400'
+                          ? 'border-ink'
+                          : 'border-border hover:border-border-strong'
                       }`}
                     >
                       {pd.isGenerating || isRemovingBg ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100">
-                          <Loader2 className="w-8 h-8 animate-spin text-purple-500" aria-hidden="true" />
-                          {isRemovingBg && <span className="text-xs text-gray-500 mt-1">Quitando fondo...</span>}
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface-2">
+                          <Loader2 className="w-8 h-8 animate-spin text-ink" aria-hidden="true" />
+                          {isRemovingBg && <span className="text-xs text-ink-muted mt-1">Quitando fondo...</span>}
                         </div>
                       ) : pd.imageUrl ? (
                         <img
@@ -666,16 +667,16 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                           className="w-full h-full object-contain bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
+                        <div className="w-full h-full flex items-center justify-center bg-surface-2 text-ink-subtle">
                           <Sparkles className="w-8 h-8" aria-hidden="true" />
                         </div>
                       )}
-                      <div className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-xs text-center py-1 font-medium">
+                      <div className="absolute bottom-0 left-0 right-0 bg-panel/80 text-on-panel text-xs text-center py-1 font-medium">
                         {config?.name}
                       </div>
                       {pd.imageUrl && !isRemovingBg && (
                         <>
-                          <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
+                          <div className="absolute top-1 right-1 bg-success text-white rounded-full p-0.5">
                             <Check className="w-3 h-3" aria-hidden="true" />
                           </div>
                           <button
@@ -684,7 +685,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                               e.stopPropagation();
                               handleRemoveBackground(pd.placement);
                             }}
-                            className="absolute top-1 left-1 bg-orange-500 hover:bg-orange-600 text-white rounded-full p-1 transition-colors"
+                            className="absolute top-1 left-1 bg-accent hover:bg-accent-hover text-accent-ink rounded-full p-1.5 transition-colors"
                             title="Quitar fondo"
                             aria-label="Quitar fondo"
                           >
@@ -696,49 +697,49 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   );
                 })}
               </div>
-            </div>
+            </Card>
 
             {/* Extracted Colors */}
             {extractedColors.length > 0 && (
-              <div className="bg-white rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Pipette className="w-5 h-5 text-purple-600" aria-hidden="true" />
+              <Card className="p-4">
+                <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                  <Pipette className="w-5 h-5 text-ink" aria-hidden="true" />
                   Paleta del Diseño
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {extractedColors.map((color, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 bg-gray-50 rounded-lg p-2"
+                      className="flex items-center gap-2 bg-surface-2 border border-border rounded-btn p-2"
                     >
                       <div
-                        className="w-8 h-8 rounded-lg border shadow-sm"
+                        className="w-8 h-8 rounded-btn border border-border"
                         style={{ backgroundColor: color.hex }}
                       />
                       <div className="text-xs">
-                        <div className="font-mono text-gray-700">{color.hex}</div>
-                        <div className="text-gray-500">{color.percentage}%</div>
+                        <div className="font-mono text-ink-muted">{color.hex}</div>
+                        <div className="text-ink-subtle">{color.percentage}%</div>
                       </div>
                     </div>
                   ))}
                 </div>
-              </div>
+              </Card>
             )}
           </div>
 
           {/* Center: Preview */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl p-4 shadow-sm sticky top-24">
+            <Card className="p-4 sticky top-24">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-gray-900">Vista Previa</h3>
-                <span className="text-xs text-gray-500">
+                <h3 className="font-bold text-ink">Vista Previa</h3>
+                <span className="text-xs text-ink-subtle">
                   {selectedPlacement && PLACEMENTS[selectedPlacement]?.name}
                 </span>
               </div>
 
               {/* Mockup Preview */}
               <div
-                className="relative mx-auto rounded-lg overflow-hidden aspect-[3/4] bg-gray-200"
+                className="relative mx-auto rounded-card overflow-hidden aspect-[3/4] bg-surface-2"
               >
                 {/* Design */}
                 {selectedDesign?.imageUrl && (
@@ -758,7 +759,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 {/* Placement guide when no design */}
                 {!selectedDesign?.imageUrl && selectedPlacement && (
                   <div
-                    className="absolute border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center"
+                    className="absolute border-2 border-dashed border-border-strong rounded-card flex items-center justify-center"
                     style={{
                       left: `${PLACEMENTS[selectedPlacement]?.x}%`,
                       top: `${PLACEMENTS[selectedPlacement]?.y}%`,
@@ -767,19 +768,19 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                       transform: 'translate(-50%, -50%)',
                     }}
                   >
-                    <span className="text-xs text-gray-500">{PLACEMENTS[selectedPlacement]?.name}</span>
+                    <span className="text-xs text-ink-subtle">{PLACEMENTS[selectedPlacement]?.name}</span>
                   </div>
                 )}
               </div>
 
-            </div>
+            </Card>
           </div>
 
           {/* Right: Selected Design Controls */}
           <div className="lg:col-span-1 space-y-4">
             {selectedPlacement && (
-              <div className="bg-white rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-3">
+              <Card className="p-4">
+                <h3 className="font-bold text-ink mb-3">
                   {PLACEMENTS[selectedPlacement]?.name}
                 </h3>
 
@@ -793,38 +794,34 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     />
                   </div>
                 ) : (
-                  <div className="w-full h-48 flex items-center justify-center bg-gray-100 rounded-lg mb-4">
-                    <p className="text-gray-500 text-sm">Sin diseño</p>
+                  <div className="w-full h-48 flex items-center justify-center bg-surface-2 rounded-card mb-4">
+                    <p className="text-ink-subtle text-sm">Sin diseño</p>
                   </div>
                 )}
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={() => handleRegeneratePlacement(selectedPlacement)}
                     disabled={!designPrompt.trim() || selectedDesign?.isGenerating}
-                    className="w-full p-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                    loading={selectedDesign?.isGenerating}
+                    className="w-full"
                   >
-                    {selectedDesign?.isGenerating ? (
-                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <RefreshCw className="w-4 h-4" aria-hidden="true" />
-                    )}
+                    {!selectedDesign?.isGenerating && <RefreshCw className="w-4 h-4" aria-hidden="true" />}
                     Regenerar
-                  </button>
+                  </Button>
 
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={() => selectedPlacement && handleRemoveBackground(selectedPlacement)}
                     disabled={!selectedDesign?.imageUrl || removingBgFor === selectedPlacement}
-                    className="w-full p-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 text-sm font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                    loading={removingBgFor === selectedPlacement}
+                    className="w-full"
                   >
-                    {removingBgFor === selectedPlacement ? (
-                      <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
-                    ) : (
-                      <Eraser className="w-4 h-4" aria-hidden="true" />
-                    )}
+                    {removingBgFor !== selectedPlacement && <Eraser className="w-4 h-4" aria-hidden="true" />}
                     Quitar Fondo
-                  </button>
+                  </Button>
 
                   <input
                     id="placement-image-upload"
@@ -835,36 +832,38 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                     className="hidden"
                     aria-label="Subir imagen para la ubicación seleccionada"
                   />
-                  <button
+                  <Button
                     type="button"
+                    variant="secondary"
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full p-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm font-medium flex items-center justify-center gap-2"
+                    className="w-full"
                   >
                     <Upload className="w-4 h-4" aria-hidden="true" />
                     Subir Imagen
-                  </button>
+                  </Button>
 
                   {selectedDesign?.imageUrl && (
-                    <button
+                    <Button
+                      variant="danger"
                       onClick={() => setPlacementDesigns(prev => prev.map(pd =>
                         pd.placement === selectedPlacement
                           ? { ...pd, imageUrl: '' }
                           : pd
                       ))}
-                      className="w-full p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 text-sm font-medium flex items-center justify-center gap-2"
+                      className="w-full"
                     >
                       <X className="w-4 h-4" aria-hidden="true" />
                       Eliminar
-                    </button>
+                    </Button>
                   )}
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Collection Name */}
-            <div className="bg-white rounded-xl p-4 shadow-sm">
-              <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                <Palette className="w-5 h-5 text-purple-600" aria-hidden="true" />
+            <Card className="p-4">
+              <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                <Palette className="w-5 h-5 text-ink" aria-hidden="true" />
                 Colección
               </h3>
               <label htmlFor="collection-name" className="sr-only">
@@ -876,25 +875,26 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 value={collectionName}
                 onChange={(e) => setCollectionName(e.target.value)}
                 placeholder="Nombre de la colección..."
-                className="w-full p-2 border rounded-lg text-sm text-gray-900 bg-white placeholder-gray-500"
+                className={inputClass}
               />
-            </div>
+            </Card>
 
             {/* Download All */}
             {completedDesigns > 0 && (
-              <div className="bg-white rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                  <Download className="w-5 h-5 text-purple-600" aria-hidden="true" />
+              <Card className="p-4">
+                <h3 className="font-bold text-ink mb-3 flex items-center gap-2">
+                  <Download className="w-5 h-5 text-ink" aria-hidden="true" />
                   Exportar
                 </h3>
-                <button
+                <Button
                   type="button"
-                  className="w-full p-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-bold hover:from-green-600 hover:to-emerald-600 flex items-center justify-center gap-2"
+                  variant="primary"
+                  className="w-full py-3"
                 >
                   <Download className="w-5 h-5" aria-hidden="true" />
                   Descargar Todos ({completedDesigns})
-                </button>
-              </div>
+                </Button>
+              </Card>
             )}
           </div>
         </div>
@@ -911,23 +911,23 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
           {Object.entries(validationResults).map(([placement, result]) => (
             <div
               key={placement}
-              className={`p-4 rounded-lg border ${
+              className={`p-4 rounded-card border border-border ${
                 !result.isValid
-                  ? 'bg-red-50 border-red-200'
+                  ? 'bg-danger-bg'
                   : result.warnings.length > 0
-                  ? 'bg-yellow-50 border-yellow-200'
-                  : 'bg-green-50 border-green-200'
+                  ? 'bg-warning-bg'
+                  : 'bg-success-bg'
               }`}
             >
               <div className="flex items-center gap-2 mb-2">
                 {!result.isValid ? (
-                  <AlertCircle className="w-5 h-5 text-red-600" aria-hidden="true" />
+                  <AlertCircle className="w-5 h-5 text-danger" aria-hidden="true" />
                 ) : result.warnings.length > 0 ? (
-                  <AlertTriangle className="w-5 h-5 text-yellow-600" aria-hidden="true" />
+                  <AlertTriangle className="w-5 h-5 text-warning" aria-hidden="true" />
                 ) : (
-                  <CheckCircle className="w-5 h-5 text-green-600" aria-hidden="true" />
+                  <CheckCircle className="w-5 h-5 text-success" aria-hidden="true" />
                 )}
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-ink">
                   {PLACEMENTS[placement]?.name || placement}
                 </span>
               </div>
@@ -935,7 +935,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               {result.errors.length > 0 && (
                 <div className="mt-2" role="alert">
                   {result.errors.map((error, i) => (
-                    <p key={i} className="text-sm text-red-700">
+                    <p key={i} className="text-sm text-danger">
                       {error}
                     </p>
                   ))}
@@ -945,7 +945,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               {result.warnings.length > 0 && (
                 <div className="mt-2">
                   {result.warnings.map((warning, i) => (
-                    <p key={i} className="text-sm text-yellow-700">
+                    <p key={i} className="text-sm text-warning">
                       {warning}
                     </p>
                   ))}
@@ -953,28 +953,28 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               )}
 
               {result.isValid && result.warnings.length === 0 && (
-                <p className="text-sm text-green-700">Imagen valida para impresion</p>
+                <p className="text-sm text-success">Imagen valida para impresion</p>
               )}
             </div>
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t">
-          <button
+        <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
+          <Button
             type="button"
+            variant="ghost"
             onClick={() => setShowValidationModal(false)}
-            className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
           >
             Cancelar
-          </button>
+          </Button>
           {Object.values(validationResults).every(r => r.isValid) && (
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleSaveToCollection}
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
             >
               Guardar de todas formas
-            </button>
+            </Button>
           )}
         </div>
       </Modal>

@@ -12,6 +12,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/Toast';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import { inputClass } from '@/components/ui/Field';
 
 interface BatchResult {
   index: number;
@@ -99,30 +102,30 @@ export default function BatchGeneratorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="py-8">
       <div className="container mx-auto px-4 max-w-5xl">
         {/* Header */}
         <div className="mb-8">
-          <Link href="/" className="text-purple-600 hover:underline text-sm mb-2 inline-block">
+          <Link href="/" className="text-ink-muted hover:text-ink underline text-sm mb-2 inline-block">
             ← Volver al Generador
           </Link>
-          <h1 className="text-3xl font-black text-gray-900 flex items-center gap-3">
-            <Layers className="w-8 h-8 text-purple-600" aria-hidden="true" />
+          <h1 className="text-3xl font-black text-ink flex items-center gap-3">
+            <Layers className="w-8 h-8 text-ink" aria-hidden="true" />
             Generación Batch
           </h1>
-          <p className="text-gray-600 mt-2">
+          <p className="text-ink-muted mt-2">
             Genera múltiples diseños de una vez escribiendo un prompt por línea
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
           {/* Form */}
-          <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" aria-hidden="true" />
+          <Card className="p-6">
+            <h2 className="text-xl font-bold text-ink mb-4 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-ink" aria-hidden="true" />
               Prompts
             </h2>
-            <p className="text-gray-600 text-sm mb-6">
+            <p className="text-ink-muted text-sm mb-6">
               Escribe un prompt por línea. Cada línea generará una imagen.
             </p>
 
@@ -136,78 +139,73 @@ export default function BatchGeneratorPage() {
                   value={customPrompts}
                   onChange={(e) => setCustomPrompts(e.target.value)}
                   rows={10}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none font-mono text-sm text-gray-900 bg-white placeholder-gray-500"
+                  className={`${inputClass} resize-none font-mono`}
                   placeholder="minimalist cat design for t-shirt&#10;geometric wolf illustration&#10;abstract mountain art&#10;cyberpunk astronaut"
                   disabled={batchLoading}
                 />
-                <p className="text-xs text-gray-500 mt-2" aria-live="polite">
+                <p className="text-xs text-ink-subtle mt-2" aria-live="polite">
                   {customPrompts.split('\n').filter(p => p.trim()).length} prompts
                 </p>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={batchLoading || !customPrompts.trim()}
-                className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-bold text-lg hover:from-purple-700 hover:to-pink-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={!customPrompts.trim()}
+                loading={batchLoading}
+                className="w-full py-4 text-lg"
               >
                 {batchLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" aria-hidden="true" />
-                    Generando... ({batchResults.length}/{customPrompts.split('\n').filter(p => p.trim()).length})
-                  </>
+                  `Generando... (${batchResults.length}/${customPrompts.split('\n').filter(p => p.trim()).length})`
                 ) : (
                   <>
                     <Layers className="w-5 h-5" aria-hidden="true" />
                     Generar Todos
                   </>
                 )}
-              </button>
+              </Button>
             </form>
 
             {/* Tips */}
-            <div className="mt-6 bg-purple-50 rounded-lg p-4">
-              <p className="font-medium text-gray-800 mb-2">Consejos:</p>
-              <ul className="text-sm text-gray-600 space-y-1">
+            <div className="mt-6 bg-info-bg rounded-card p-4">
+              <p className="font-medium text-ink mb-2">Consejos:</p>
+              <ul className="text-sm text-ink-muted space-y-1">
                 <li>• Usa prompts en inglés para mejores resultados</li>
                 <li>• Incluye "for t-shirt" o "for merchandise"</li>
                 <li>• Los diseños minimalistas funcionan mejor</li>
               </ul>
             </div>
-          </div>
+          </Card>
 
           {/* Results */}
-          <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-6">
+          <Card className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-gray-900">Resultados</h2>
+              <h2 className="text-xl font-bold text-ink">Resultados</h2>
               {batchResults.filter(r => r.success).length > 0 && (
-                <button
-                  onClick={handleDownloadAll}
-                  className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
-                >
+                <Button size="sm" onClick={handleDownloadAll}>
                   <Download className="w-4 h-4" aria-hidden="true" />
                   Descargar Todos
-                </button>
+                </Button>
               )}
             </div>
 
             <div aria-live="polite">
             {batchResults.length === 0 && !batchLoading && (
-              <div className="text-center py-12 text-gray-600">
-                <Layers className="w-16 h-16 mx-auto mb-4 opacity-50 text-gray-400" aria-hidden="true" />
+              <div className="text-center py-12 text-ink-muted">
+                <Layers className="w-16 h-16 mx-auto mb-4 text-ink-subtle" aria-hidden="true" />
                 <p>Los diseños generados aparecerán aquí</p>
               </div>
             )}
 
             {batchLoading && batchResults.length === 0 && (
               <div className="text-center py-12">
-                <Loader2 className="w-16 h-16 mx-auto mb-4 text-purple-600 animate-spin" aria-hidden="true" />
-                <p className="text-gray-600">Iniciando generación...</p>
+                <Loader2 className="w-16 h-16 mx-auto mb-4 text-ink animate-spin" aria-hidden="true" />
+                <p className="text-ink-muted">Iniciando generación...</p>
               </div>
             )}
 
             {batchResults.length > 0 && (
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-green-600 mb-4">
+                <div className="flex items-center gap-2 text-success mb-4">
                   <CheckCircle className="w-5 h-5" aria-hidden="true" />
                   <span className="font-bold">
                     {batchResults.filter(r => r.success).length} de {batchResults.length} diseños completados
@@ -218,8 +216,8 @@ export default function BatchGeneratorPage() {
                   {batchResults.map((result) => (
                     <div
                       key={result.index}
-                      className={`relative aspect-square rounded-lg overflow-hidden border-2 bg-gray-100 ${
-                        result.success ? 'border-green-500' : 'border-red-500'
+                      className={`relative aspect-square rounded-card overflow-hidden border-2 bg-surface-2 ${
+                        result.success ? 'border-success' : 'border-danger'
                       }`}
                     >
                       {result.imageUrl ? (
@@ -232,7 +230,7 @@ export default function BatchGeneratorPage() {
                           <button
                             onClick={() => handleDownloadImage(result.imageUrl, result.index)}
                             aria-label={`Descargar diseño ${result.index}`}
-                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-lg transition-colors"
+                            className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-btn transition-colors"
                           >
                             <Download className="w-4 h-4" aria-hidden="true" />
                           </button>
@@ -240,9 +238,9 @@ export default function BatchGeneratorPage() {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           {batchLoading && result.index === batchResults.length ? (
-                            <Loader2 className="w-8 h-8 text-purple-500 animate-spin" aria-hidden="true" />
+                            <Loader2 className="w-8 h-8 text-ink animate-spin" aria-hidden="true" />
                           ) : (
-                            <XCircle className="w-8 h-8 text-red-500" aria-hidden="true" />
+                            <XCircle className="w-8 h-8 text-danger" aria-hidden="true" />
                           )}
                         </div>
                       )}
@@ -258,19 +256,19 @@ export default function BatchGeneratorPage() {
 
             {/* Link to Printful */}
             {batchResults.filter(r => r.success).length > 0 && (
-              <div className="mt-6 text-center border-t pt-4">
+              <div className="mt-6 text-center border-t border-border pt-4">
                 <a
                   href="https://www.printful.com/dashboard"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 font-medium"
+                  className="inline-flex items-center gap-2 text-ink-muted hover:text-ink font-medium"
                 >
                   <ExternalLink className="w-4 h-4" aria-hidden="true" />
                   Subir diseños a Printful Dashboard
                 </a>
               </div>
             )}
-          </div>
+          </Card>
         </div>
       </div>
     </div>

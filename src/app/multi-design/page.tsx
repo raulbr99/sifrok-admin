@@ -3,10 +3,15 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Sparkles, Download, ArrowLeft, Zap, Award, DollarSign, Brain } from 'lucide-react';
+import { Sparkles, Download, ArrowLeft, Zap, Award, DollarSign, Brain, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { IMAGE_GENERATION_MODELS, TEXT_GENERATION_MODELS, type ImageGenModel, type TextGenModel } from '@/lib/replicate-models';
 import { useToast } from '@/components/ui/Toast';
+import Button from '@/components/ui/Button';
+import Card from '@/components/ui/Card';
+import Badge from '@/components/ui/Badge';
+import Field, { inputClass } from '@/components/ui/Field';
+import PageHeader from '@/components/ui/PageHeader';
 
 interface DesignArea {
   area: string;
@@ -202,10 +207,10 @@ export default function MultiDesignPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center" role="status" aria-live="polite">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-500 border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
-          <p className="text-gray-600">Cargando...</p>
+          <Loader2 className="h-12 w-12 animate-spin text-ink mx-auto mb-4" aria-hidden="true" />
+          <p className="text-ink-muted">Cargando...</p>
         </div>
       </div>
     );
@@ -216,39 +221,35 @@ export default function MultiDesignPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-50 to-white py-12">
+    <div className="min-h-screen py-12">
       <div className="container mx-auto px-4 max-w-6xl">
         <Link
           href="/admin"
-          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-800 mb-6 font-bold"
+          className="inline-flex items-center gap-2 text-ink-muted hover:text-ink mb-6 font-medium"
         >
           <ArrowLeft className="w-5 h-5" aria-hidden="true" />
           Volver al Admin
         </Link>
 
-        <h1 className="text-5xl font-black text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
-          Generador Multi-Área
-        </h1>
-        <p className="text-center text-gray-600 mb-12">
-          Genera diseños para diferentes partes de tu prenda automáticamente
-        </p>
+        <PageHeader
+          title="Generador Multi-Área"
+          subtitle="Genera diseños para diferentes partes de tu prenda automáticamente"
+          icon={Sparkles}
+        />
 
-        <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl shadow-lg p-8 border-4 border-purple-300 mb-8">
-          <h2 className="text-3xl font-black mb-6 text-purple-600 flex items-center gap-2">
-            <Sparkles className="w-8 h-8" aria-hidden="true" />
+        <Card className="p-8 mb-8">
+          <h2 className="text-2xl font-bold tracking-tight mb-6 text-ink flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-ink" aria-hidden="true" />
             Configuración
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label htmlFor="product-type" className="block mb-2 text-gray-700 font-bold">
-                Tipo de Producto
-              </label>
+            <Field label="Tipo de Producto" htmlFor="product-type">
               <select
                 id="product-type"
                 value={productType}
                 onChange={(e) => setProductType(e.target.value as keyof typeof PRODUCT_TYPES)}
-                className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 font-semibold"
+                className={inputClass}
                 disabled={generating}
               >
                 {Object.entries(PRODUCT_TYPES).map(([key, { label, areas }]) => (
@@ -257,17 +258,14 @@ export default function MultiDesignPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="image-model" className="block mb-2 text-gray-700 font-bold">
-                Modelo de IA
-              </label>
+            <Field label="Modelo de IA" htmlFor="image-model">
               <select
                 id="image-model"
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value as ImageGenModel)}
-                className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 font-semibold"
+                className={inputClass}
                 disabled={generating}
               >
                 {Object.entries(IMAGE_GENERATION_MODELS).map(([key, model]) => (
@@ -276,42 +274,42 @@ export default function MultiDesignPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </Field>
           </div>
 
           {/* Info del modelo seleccionado */}
-          <div className="mb-6 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-lg p-4">
+          <div className="mb-6 bg-surface-2 border border-border rounded-card p-4">
             <div className="flex items-start gap-3">
               <div className="flex-1">
-                <h3 className="font-bold text-indigo-900 mb-2">
+                <h3 className="font-bold text-ink mb-2 flex items-center gap-2">
                   {IMAGE_GENERATION_MODELS[selectedModel].name}
                   {IMAGE_GENERATION_MODELS[selectedModel].supportsImageInput && (
-                    <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                    <Badge tone="success">
                       ✏️ Soporta edición
-                    </span>
+                    </Badge>
                   )}
                 </h3>
                 <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="flex items-center gap-1 text-indigo-700">
+                  <div className="flex items-center gap-1 text-ink-muted">
                     <Zap className="w-3 h-3" aria-hidden="true" />
                     <span>{IMAGE_GENERATION_MODELS[selectedModel].speed}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-indigo-700">
+                  <div className="flex items-center gap-1 text-ink-muted">
                     <Award className="w-3 h-3" aria-hidden="true" />
                     <span>Calidad: {IMAGE_GENERATION_MODELS[selectedModel].quality}</span>
                   </div>
-                  <div className="flex items-center gap-1 text-indigo-700">
+                  <div className="flex items-center gap-1 text-ink-muted">
                     <DollarSign className="w-3 h-3" aria-hidden="true" />
                     <span>Costo: {IMAGE_GENERATION_MODELS[selectedModel].cost}</span>
                   </div>
                 </div>
                 <div className="mt-2">
-                  <p className="text-xs text-indigo-600">
+                  <p className="text-xs text-ink-muted">
                     <strong>Ventajas:</strong> {IMAGE_GENERATION_MODELS[selectedModel].strengths.join(', ')}
                   </p>
                 </div>
                 {!IMAGE_GENERATION_MODELS[selectedModel].supportsImageInput && (
-                  <p className="text-xs text-orange-600 mt-2">
+                  <p className="text-xs text-warning mt-2">
                     ⚠️ Este modelo no soporta edición de imágenes. Usa FLUX o SDXL para editar.
                   </p>
                 )}
@@ -325,60 +323,49 @@ export default function MultiDesignPage() {
                 type="checkbox"
                 checked={removeBackground}
                 onChange={(e) => setRemoveBackground(e.target.checked)}
-                className="w-5 h-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500"
+                className="w-5 h-5 accent-accent border border-border-strong rounded"
                 disabled={generating}
               />
-              <span className="text-gray-700 font-bold">
+              <span className="text-ink font-medium">
                 Eliminar fondo automáticamente (BRIA RMBG 2.0)
               </span>
             </label>
-            <p className="text-xs text-gray-600 mt-1 ml-7">
+            <p className="text-xs text-ink-muted mt-1 ml-7">
               Recomendado para diseños de impresión en prendas
             </p>
           </div>
 
-          <div className="mb-6">
-            <label htmlFor="design-prompt" className="block mb-2 text-gray-700 font-bold">
-              Describe tu diseño
-            </label>
+          <Field label="Describe tu diseño" htmlFor="design-prompt" className="mb-6"
+            hint="💡 La IA creará variaciones automáticas para cada área de la prenda">
             <textarea
               id="design-prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Ej: Un gato espacial con colores neón y estilo retro"
-              className="w-full p-4 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 min-h-[100px] placeholder-gray-500"
+              className={`${inputClass} min-h-[100px]`}
               disabled={generating || enhancing}
             />
-            <p className="text-sm text-gray-600 mt-2">
-              💡 La IA creará variaciones automáticas para cada área de la prenda
-            </p>
-          </div>
+          </Field>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-              <label htmlFor="enhance-instructions" className="block mb-2 text-gray-700 font-bold text-sm">
-                ¿Qué mejorar del prompt? (opcional)
-              </label>
+            <Field label="¿Qué mejorar del prompt? (opcional)" htmlFor="enhance-instructions">
               <input
                 id="enhance-instructions"
                 type="text"
                 value={enhanceInstructions}
                 onChange={(e) => setEnhanceInstructions(e.target.value)}
                 placeholder="Ej: hazlo más minimalista, añade más detalles, estilo vintage..."
-                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 text-sm placeholder-gray-500"
+                className={inputClass}
                 disabled={generating || enhancing}
               />
-            </div>
+            </Field>
 
-            <div>
-              <label htmlFor="text-model" className="block mb-2 text-gray-700 font-bold text-sm">
-                Modelo de Texto para Mejorar
-              </label>
+            <Field label="Modelo de Texto para Mejorar" htmlFor="text-model">
               <select
                 id="text-model"
                 value={selectedTextModel}
                 onChange={(e) => setSelectedTextModel(e.target.value as TextGenModel)}
-                className="w-full p-3 border-2 border-blue-200 rounded-lg focus:outline-none focus:border-blue-400 text-sm font-semibold"
+                className={inputClass}
                 disabled={generating || enhancing}
               >
                 {Object.entries(TEXT_GENERATION_MODELS).map(([key, model]) => (
@@ -387,20 +374,20 @@ export default function MultiDesignPage() {
                   </option>
                 ))}
               </select>
-            </div>
+            </Field>
           </div>
 
           {/* Info del modelo de texto */}
-          <div className="mb-6 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-3">
+          <div className="mb-6 bg-surface-2 border border-border rounded-card p-3">
             <div className="flex items-center gap-2 text-xs">
-              <Brain className="w-4 h-4 text-blue-700" aria-hidden="true" />
+              <Brain className="w-4 h-4 text-ink-muted" aria-hidden="true" />
               <div className="flex-1">
-                <span className="font-bold text-blue-900">{TEXT_GENERATION_MODELS[selectedTextModel].name}:</span>
-                <span className="text-blue-700 ml-2">
+                <span className="font-bold text-ink">{TEXT_GENERATION_MODELS[selectedTextModel].name}:</span>
+                <span className="text-ink-muted ml-2">
                   {TEXT_GENERATION_MODELS[selectedTextModel].strengths.join(', ')}
                 </span>
               </div>
-              <div className="flex gap-3 text-blue-600">
+              <div className="flex gap-3 text-ink-muted">
                 <span className="flex items-center gap-1">
                   <Zap className="w-3 h-3" aria-hidden="true" />
                   {TEXT_GENERATION_MODELS[selectedTextModel].speed}
@@ -414,57 +401,47 @@ export default function MultiDesignPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-4 mb-4">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={handleEnhancePrompt}
               disabled={enhancing || generating || !prompt.trim()}
+              loading={enhancing}
               aria-label="Mejorar prompt"
-              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-full font-bold text-lg hover:from-blue-600 hover:to-cyan-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
-              {enhancing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" aria-hidden="true"></div>
-                  Mejorando...
-                </span>
-              ) : (
-                '🚀 Mejorar Prompt'
-              )}
-            </button>
+              {enhancing ? 'Mejorando...' : '🚀 Mejorar Prompt'}
+            </Button>
 
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleGenerate}
               disabled={generating || enhancing || !prompt.trim()}
+              loading={generating}
               aria-label="Generar diseños"
-              className="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-full font-bold text-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full"
             >
-              {generating ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" aria-hidden="true"></div>
-                  Generando...
-                </span>
-              ) : (
-                '✨ Generar Diseños'
-              )}
-            </button>
+              {generating ? 'Generando...' : '✨ Generar Diseños'}
+            </Button>
           </div>
 
-          <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-            <p className="text-sm text-blue-800 mb-2">
+          <div className="bg-info-bg border border-border rounded-card p-4">
+            <p className="text-sm text-ink mb-2">
               <strong>💡 Tips para mejores diseños:</strong>
             </p>
-            <ul className="text-xs text-blue-700 space-y-1 ml-4 list-disc">
+            <ul className="text-xs text-ink-muted space-y-1 ml-4 list-disc">
               <li>Sé específico con el estilo: "minimalista", "vintage", "pixel art"</li>
               <li>Menciona colores: "neón", "pastel", "blanco y negro"</li>
               <li>Evita mencionar "camiseta" o "sudadera" en el prompt</li>
               <li>Usa "Mejorar Prompt" para optimizar automáticamente</li>
             </ul>
           </div>
-        </div>
+        </Card>
 
         {designs.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-8 border-4 border-purple-200">
-            <h2 className="text-3xl font-black mb-6 text-purple-600">
+          <Card className="p-8">
+            <h2 className="text-2xl font-bold tracking-tight mb-6 text-ink">
               Diseños Generados
             </h2>
 
@@ -472,36 +449,38 @@ export default function MultiDesignPage() {
               {designs.map((design) => (
                 <div
                   key={design.area}
-                  className="border-4 border-purple-200 rounded-lg p-4 bg-gradient-to-br from-purple-50 to-pink-50"
+                  className="border border-border rounded-card p-4 bg-surface-2"
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-black text-xl text-purple-700">
+                    <h3 className="font-bold text-xl text-ink">
                       {design.label}
                     </h3>
                     <div className="flex gap-2">
                       {IMAGE_GENERATION_MODELS[selectedModel].supportsImageInput && (
-                        <button
+                        <Button
                           type="button"
+                          variant="secondary"
+                          size="sm"
                           onClick={() => setEditingArea(editingArea === design.area ? null : design.area)}
-                          className="bg-orange-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all flex items-center gap-2"
                           disabled={generating}
                           aria-label={`Editar diseño de ${design.label}`}
                         >
                           ✏️ Editar
-                        </button>
+                        </Button>
                       )}
-                      <button
+                      <Button
                         type="button"
+                        variant="secondary"
+                        size="sm"
                         onClick={() => handleDownload(design.imageUrl, design.area)}
-                        className="bg-blue-500 text-white px-3 py-2 rounded-lg font-semibold hover:bg-blue-600 transition-all flex items-center gap-2"
                         aria-label={`Descargar diseño de ${design.label}`}
                       >
                         <Download className="w-4 h-4" aria-hidden="true" />
-                      </button>
+                      </Button>
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-lg p-4 mb-3">
+                  <div className="bg-surface border border-border rounded-card p-4 mb-3">
                     <img
                       src={design.imageUrl}
                       alt={`Diseño generado para ${design.label}`}
@@ -510,8 +489,8 @@ export default function MultiDesignPage() {
                   </div>
 
                   {editingArea === design.area && (
-                    <div className="bg-gradient-to-r from-orange-50 to-yellow-50 border-2 border-orange-300 rounded-lg p-4 mb-3">
-                      <label htmlFor={`edit-instructions-${design.area}`} className="block mb-2 text-sm font-bold text-orange-900">
+                    <div className="bg-warning-bg border border-border rounded-card p-4 mb-3">
+                      <label htmlFor={`edit-instructions-${design.area}`} className="block mb-2 text-sm font-medium text-ink">
                         ¿Qué quieres cambiar?
                       </label>
                       <div className="flex gap-2">
@@ -521,49 +500,49 @@ export default function MultiDesignPage() {
                           value={editInstructions}
                           onChange={(e) => setEditInstructions(e.target.value)}
                           placeholder="Ej: cambia el color a azul, añade más detalles..."
-                          className="flex-1 p-2 border-2 border-orange-300 rounded-lg focus:outline-none focus:border-orange-500 text-sm placeholder-gray-500"
+                          className={`${inputClass} flex-1`}
                           disabled={generating}
                         />
-                        <button
+                        <Button
                           type="button"
+                          variant="primary"
                           onClick={() => handleEditDesign(design.area)}
                           disabled={generating || !editInstructions.trim()}
-                          className="bg-orange-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-orange-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                           aria-label={`Aplicar cambios al diseño de ${design.label}`}
+                          className="whitespace-nowrap"
                         >
                           {generating ? '...' : '🔄 Aplicar'}
-                        </button>
+                        </Button>
                       </div>
-                      <p className="text-xs text-orange-700 mt-2">
+                      <p className="text-xs text-ink-muted mt-2">
                         La IA editará esta imagen según tus instrucciones
                       </p>
                     </div>
                   )}
 
-                  <p className="text-xs text-gray-600 text-center">
+                  <p className="text-xs text-ink-muted text-center">
                     📍 Se colocará en: <strong>{design.area}</strong>
                   </p>
                 </div>
               ))}
             </div>
 
-            <button
+            <Button
               type="button"
+              variant="primary"
               onClick={handleDownloadAll}
-              className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-4 rounded-full font-bold text-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg"
+              className="w-full"
             >
-              <span className="flex items-center justify-center gap-2">
-                <Download className="w-5 h-5" aria-hidden="true" />
-                Descargar Todos los Diseños
-              </span>
-            </button>
+              <Download className="w-5 h-5" aria-hidden="true" />
+              Descargar Todos los Diseños
+            </Button>
 
-            <div className="mt-4 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-              <p className="text-sm text-blue-800">
+            <div className="mt-4 bg-info-bg border border-border rounded-card p-4">
+              <p className="text-sm text-ink">
                 <strong>💡 Siguiente paso:</strong> Sube estos diseños manualmente a Printful Dashboard y configura el producto con las variantes que necesites.
               </p>
             </div>
-          </div>
+          </Card>
         )}
       </div>
     </div>
