@@ -7,12 +7,15 @@ import {
   Pencil,
   Trash2,
   Save,
+  Search,
 } from 'lucide-react'
 import {
   getProductMappings,
   createProductMapping,
   updateProductMapping,
   deleteProductMapping,
+  listPrintfulSyncVariants,
+  type PrintfulSyncVariantOption,
 } from '@/actions/products'
 import Modal from '@/components/ui/Modal'
 import { useToast } from '@/components/ui/Toast'
@@ -64,6 +67,9 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<ProductMappingForm>(EMPTY_FORM)
+  const [showVariantPicker, setShowVariantPicker] = useState(false)
+  const [variantsLoading, setVariantsLoading] = useState(false)
+  const [variants, setVariants] = useState<PrintfulSyncVariantOption[]>([])
   const { toast } = useToast()
   const confirm = useConfirm()
 
@@ -140,6 +146,39 @@ export default function ProductsPage() {
     setFormData(EMPTY_FORM)
   }
 
+  async function handleOpenVariantPicker() {
+    setShowVariantPicker(true)
+    setVariantsLoading(true)
+    try {
+      const data = await listPrintfulSyncVariants()
+      setVariants(data)
+    } catch (error) {
+      console.error('Error loading Printful variants:', error)
+      toast.error('No se pudieron cargar las variantes de Printful.')
+      setShowVariantPicker(false)
+    } finally {
+      setVariantsLoading(false)
+    }
+  }
+
+  function handleSelectVariant(option: PrintfulSyncVariantOption) {
+    setFormData((prev) => {
+      const next: ProductMappingForm = {
+        ...prev,
+        printfulSyncVariantId: option.syncVariantId,
+      }
+      if (!prev.productName.trim()) {
+        next.productName = `${option.productName} ${option.variantName}`.trim()
+      }
+      if (!prev.basePrice && option.retailPrice) {
+        const parsed = parseFloat(option.retailPrice)
+        if (!Number.isNaN(parsed)) next.basePrice = parsed
+      }
+      return next
+    })
+    setShowVariantPicker(false)
+  }
+
   return (
     <div className="p-4 sm:p-6 md:p-8">
       <PageHeader
@@ -209,6 +248,15 @@ export default function ProductsPage() {
                 className={inputClass}
                 placeholder="4567890123"
               />
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={handleOpenVariantPicker}
+                className="mt-2 w-full"
+              >
+                <Search className="w-4 h-4" aria-hidden="true" />
+                Elegir variante de Printful
+              </Button>
             </Field>
           </div>
 
@@ -275,6 +323,63 @@ export default function ProductsPage() {
             Guardar
           </Button>
         </div>
+      </Modal>
+
+      {/* Printful Variant Picker Modal */}
+      <Modal
+        open={showVariantPicker}
+        onClose={() => setShowVariantPicker(false)}
+        title="Elegir variante de Printful"
+        description="Selecciona una variante sincronizada para rellenar el Sync Variant ID."
+        size="lg"
+      >
+        {variantsLoading ? (
+          <div className="px-4 py-8 text-center text-ink-muted" role="status" aria-live="polite">
+            Cargando variantes de Printful...
+          </div>
+        ) : variants.length === 0 ? (
+          <div className="px-4 py-8 text-center text-ink-muted">
+            No hay variantes sincronizadas en Printful.
+          </div>
+        ) : (
+          <ul className="max-h-[60vh] overflow-y-auto divide-y divide-border">
+            {variants.map((option) => {
+              const meta = [option.size, option.color].filter(Boolean).join(' / ')
+              return (
+                <li key={option.syncVariantId}>
+                  <button
+                    type="button"
+                    onClick={() => handleSelectVariant(option)}
+                    className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-surface-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  >
+                    {option.thumbnail ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={option.thumbnail}
+                        alt=""
+                        className="h-12 w-12 flex-shrink-0 rounded-card object-cover bg-surface-2"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 flex-shrink-0 rounded-card bg-surface-2" aria-hidden="true" />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-ink truncate">{option.productName}</p>
+                      <p className="text-sm text-ink-muted truncate">
+                        {option.variantName}
+                        {meta && <span className="text-ink-muted"> · {meta}</span>}
+                      </p>
+                    </div>
+                    {option.retailPrice && (
+                      <span className="flex-shrink-0 text-sm font-medium text-ink">
+                        {option.retailPrice} EUR
+                      </span>
+                    )}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </Modal>
 
       {/* Table */}

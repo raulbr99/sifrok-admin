@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   FolderOpen,
   Plus,
@@ -27,15 +27,17 @@ interface Design {
   id: string;
   imageUrl: string;
   name: string;
-  placement: string;
-  size: string;
+  prompt?: string | null;
+  placement: string | null;
+  size: string | null;
+  collectionId?: string | null;
   createdAt: string;
 }
 
 interface Collection {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   colors: { hex: string; name: string }[];
   designs: Design[];
   garmentTypes: string[];
@@ -57,6 +59,8 @@ export default function CollectionsPage() {
   const { toast } = useToast();
   const confirm = useConfirm();
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [showNewModal, setShowNewModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
@@ -72,62 +76,95 @@ export default function CollectionsPage() {
   const [newColorHex, setNewColorHex] = useState('#7c3aed');
   const [newColorName, setNewColorName] = useState('');
 
-  // Load collections from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('sifrok-collections');
-    if (saved) {
-      setCollections(JSON.parse(saved));
+  // Load collections from the DB API
+  const fetchCollections = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/admin/collections', { credentials: 'same-origin' });
+      if (!res.ok) throw new Error('No se pudieron cargar las colecciones.');
+      const data: Collection[] = await res.json();
+      setCollections(data);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al cargar las colecciones.');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
-  const saveCollections = (updated: Collection[]) => {
-    setCollections(updated);
-    localStorage.setItem('sifrok-collections', JSON.stringify(updated));
-  };
+  useEffect(() => {
+    fetchCollections();
+  }, [fetchCollections]);
 
-  const createCollection = () => {
+  const createCollection = async () => {
     if (!newName.trim()) {
       toast.error('Escribe un nombre para la colección.');
       return;
     }
 
-    const collection: Collection = {
-      id: Date.now().toString(),
-      name: newName,
-      description: newDescription,
-      colors: newColors,
-      designs: [],
-      garmentTypes: newGarments,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    saveCollections([...collections, collection]);
-    resetForm();
-    setShowNewModal(false);
-    toast.success('Colección creada.');
+    setSaving(true);
+    try {
+      const res = await fetch('/api/admin/collections', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newName.trim(),
+          description: newDescription || undefined,
+          colors: newColors,
+          garmentTypes: newGarments,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo crear la colección.');
+      }
+      const created: Collection = await res.json();
+      setCollections((prev) => [created, ...prev]);
+      resetForm();
+      setShowNewModal(false);
+      toast.success('Colección creada.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al crear la colección.');
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const updateCollection = () => {
+  const updateCollection = async () => {
     if (!editingCollection) return;
+    if (!newName.trim()) {
+      toast.error('Escribe un nombre para la colección.');
+      return;
+    }
 
-    const updated = collections.map((c) =>
-      c.id === editingCollection.id
-        ? {
-            ...editingCollection,
-            name: newName,
-            description: newDescription,
-            colors: newColors,
-            garmentTypes: newGarments,
-            updatedAt: new Date().toISOString(),
-          }
-        : c
-    );
-
-    saveCollections(updated);
-    resetForm();
-    setEditingCollection(null);
-    toast.success('Cambios guardados.');
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/collections/${editingCollection.id}`, {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newName.trim(),
+          description: newDescription || undefined,
+          colors: newColors,
+          garmentTypes: newGarments,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudieron guardar los cambios.');
+      }
+      const updated: Collection = await res.json();
+      setCollections((prev) => prev.map((c) => (c.id === updated.id ? updated : c)));
+      setSelectedCollection((prev) => (prev?.id === updated.id ? updated : prev));
+      resetForm();
+      setEditingCollection(null);
+      toast.success('Cambios guardados.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al guardar los cambios.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const deleteCollection = async (id: string) => {
@@ -140,11 +177,23 @@ export default function CollectionsPage() {
     });
     if (!confirmed) return;
 
-    saveCollections(collections.filter((c) => c.id !== id));
-    if (selectedCollection?.id === id) {
-      setSelectedCollection(null);
+    try {
+      const res = await fetch(`/api/admin/collections/${id}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo eliminar la colección.');
+      }
+      setCollections((prev) => prev.filter((c) => c.id !== id));
+      if (selectedCollection?.id === id) {
+        setSelectedCollection(null);
+      }
+      toast.success('Colección eliminada.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al eliminar la colección.');
     }
-    toast.success('Colección eliminada.');
   };
 
   const resetForm = () => {
@@ -160,7 +209,7 @@ export default function CollectionsPage() {
   const startEditing = (collection: Collection) => {
     setEditingCollection(collection);
     setNewName(collection.name);
-    setNewDescription(collection.description);
+    setNewDescription(collection.description ?? '');
     setNewColors(collection.colors);
     setNewGarments(collection.garmentTypes);
   };
@@ -179,35 +228,90 @@ export default function CollectionsPage() {
     );
   };
 
-  const addDesignToCollection = (collectionId: string, imageUrl: string) => {
-    const design: Design = {
-      id: Date.now().toString(),
-      imageUrl,
-      name: `Diseño ${Date.now()}`,
-      placement: 'front-center',
-      size: 'md',
-      createdAt: new Date().toISOString(),
-    };
-
-    const updated = collections.map((c) =>
-      c.id === collectionId
-        ? { ...c, designs: [...c.designs, design], updatedAt: new Date().toISOString() }
-        : c
+  // Refresh just one collection's designs from the API.
+  const refreshCollectionDesigns = async (collectionId: string) => {
+    const res = await fetch(`/api/admin/designs?collectionId=${encodeURIComponent(collectionId)}`, {
+      credentials: 'same-origin',
+    });
+    if (!res.ok) throw new Error('No se pudieron actualizar los diseños.');
+    const designs: Design[] = await res.json();
+    setCollections((prev) =>
+      prev.map((c) => (c.id === collectionId ? { ...c, designs } : c))
     );
-
-    saveCollections(updated);
+    setSelectedCollection((prev) =>
+      prev?.id === collectionId ? { ...prev, designs } : prev
+    );
   };
 
-  const removeDesignFromCollection = (collectionId: string, designId: string) => {
-    const updated = collections.map((c) =>
-      c.id === collectionId
-        ? { ...c, designs: c.designs.filter((d) => d.id !== designId) }
-        : c
-    );
+  const addDesignToCollection = async (collectionId: string, imageUrl: string) => {
+    try {
+      const res = await fetch('/api/admin/designs', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl,
+          name: `Diseño ${new Date().toISOString().slice(0, 10)}`,
+          collectionId,
+          placement: 'front-center',
+          size: 'md',
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo añadir el diseño.');
+      }
+      await refreshCollectionDesigns(collectionId);
+      toast.success('Diseño añadido.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al añadir el diseño.');
+    }
+  };
 
-    saveCollections(updated);
-    if (selectedCollection) {
-      setSelectedCollection(updated.find((c) => c.id === collectionId) || null);
+  const removeDesignFromCollection = async (collectionId: string, designId: string) => {
+    try {
+      const res = await fetch(`/api/admin/designs/${designId}`, {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? 'No se pudo eliminar el diseño.');
+      }
+      setCollections((prev) =>
+        prev.map((c) =>
+          c.id === collectionId
+            ? { ...c, designs: c.designs.filter((d) => d.id !== designId) }
+            : c
+        )
+      );
+      setSelectedCollection((prev) =>
+        prev?.id === collectionId
+          ? { ...prev, designs: prev.designs.filter((d) => d.id !== designId) }
+          : prev
+      );
+      toast.success('Diseño eliminado.');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Error al eliminar el diseño.');
+    }
+  };
+
+  const exportCollection = (collection: Collection) => {
+    try {
+      const blob = new Blob([JSON.stringify(collection, null, 2)], {
+        type: 'application/json',
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${collection.name || 'coleccion'}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success('Colección exportada.');
+    } catch {
+      toast.error('No se pudo exportar la colección.');
     }
   };
 
@@ -237,7 +341,20 @@ export default function CollectionsPage() {
         </div>
 
         {/* Collections Grid */}
-        {collections.length === 0 ? (
+        {loading ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6" aria-busy="true">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <div className="h-32 bg-surface-2 animate-pulse" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 w-2/3 bg-surface-2 rounded animate-pulse" />
+                  <div className="h-3 w-full bg-surface-2 rounded animate-pulse" />
+                  <div className="h-8 w-full bg-surface-2 rounded animate-pulse" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : collections.length === 0 ? (
           <Card className="p-12 text-center">
             <FolderOpen className="w-16 h-16 mx-auto mb-4 text-ink-subtle" aria-hidden="true" />
             <h3 className="text-xl font-bold text-ink mb-2">No hay colecciones</h3>
@@ -456,6 +573,7 @@ export default function CollectionsPage() {
             <div className="border-t border-border pt-6 flex justify-end gap-3">
               <Button
                 variant="ghost"
+                disabled={saving}
                 onClick={() => {
                   setShowNewModal(false);
                   setEditingCollection(null);
@@ -464,7 +582,10 @@ export default function CollectionsPage() {
               >
                 Cancelar
               </Button>
-              <Button onClick={editingCollection ? updateCollection : createCollection}>
+              <Button
+                onClick={editingCollection ? updateCollection : createCollection}
+                loading={saving}
+              >
                 {editingCollection ? 'Guardar Cambios' : 'Crear Colección'}
               </Button>
             </div>
@@ -589,7 +710,10 @@ export default function CollectionsPage() {
 
                 {/* Export */}
                 <div className="mt-6 pt-6 border-t border-border flex gap-3">
-                  <Button variant="secondary">
+                  <Button
+                    variant="secondary"
+                    onClick={() => exportCollection(selectedCollection)}
+                  >
                     <Download className="w-4 h-4" aria-hidden="true" />
                     Exportar Colección
                   </Button>

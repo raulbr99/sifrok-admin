@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Download, Sparkles, Wand2, RotateCcw, ExternalLink } from 'lucide-react';
+import { Download, Sparkles, Wand2, RotateCcw, ExternalLink, Save } from 'lucide-react';
 import { useToast } from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -22,6 +22,7 @@ export default function DesignGeneratorPage() {
   const [editPrompt, setEditPrompt] = useState<string>('');
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [imageModel, setImageModel] = useState<string>('google/gemini-2.0-flash-exp:free');
+  const [savingDesign, setSavingDesign] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -171,6 +172,36 @@ export default function DesignGeneratorPage() {
     setEditPrompt('');
   };
 
+  const handleSaveDesign = async () => {
+    if (!generatedImage) {
+      return;
+    }
+
+    setSavingDesign(true);
+    try {
+      const response = await fetch('/api/admin/designs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageUrl: generatedImage,
+          name: aiPrompt?.slice(0, 60) || 'Diseño',
+          prompt: aiPrompt,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success('Diseño guardado.');
+      } else {
+        toast.error('No se pudo guardar el diseño. Inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error saving design:', error);
+      toast.error('No se pudo guardar el diseño. Revisa tu conexión e inténtalo de nuevo.');
+    } finally {
+      setSavingDesign(false);
+    }
+  };
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center" role="status" aria-live="polite">
@@ -274,6 +305,15 @@ export default function DesignGeneratorPage() {
                   <Button variant="primary" onClick={() => handleDownloadImage(generatedImage)}>
                     <Download className="w-4 h-4" aria-hidden="true" />
                     Descargar
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={handleSaveDesign}
+                    loading={savingDesign}
+                    disabled={savingDesign}
+                  >
+                    <Save className="w-4 h-4" aria-hidden="true" />
+                    {savingDesign ? 'Guardando...' : 'Guardar diseño'}
                   </Button>
                   <Button variant="secondary" onClick={handleNewDesign}>
                     <RotateCcw className="w-4 h-4" aria-hidden="true" />

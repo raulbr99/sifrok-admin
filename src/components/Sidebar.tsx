@@ -18,12 +18,14 @@ import {
   Tags,
   Menu,
   X,
+  LayoutGrid,
 } from 'lucide-react';
 
 const menuItems = [
   { href: '/', label: 'Generador', icon: Sparkles },
   { href: '/ideas', label: 'Ideas', icon: Lightbulb },
   { href: '/studio', label: 'Design Studio', icon: Shirt },
+  { href: '/multi-design', label: 'Multi-Diseño', icon: LayoutGrid },
   { href: '/collections', label: 'Colecciones', icon: FolderOpen },
   { href: '/automatizaciones', label: 'Batch', icon: Layers },
   { href: '/settings', label: 'Configuracion', icon: Settings },

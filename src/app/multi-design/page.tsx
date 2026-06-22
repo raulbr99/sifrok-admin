@@ -3,7 +3,7 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Sparkles, Download, ArrowLeft, Zap, Award, DollarSign, Brain, Loader2 } from 'lucide-react';
+import { Sparkles, Download, ArrowLeft, Zap, Award, DollarSign, Brain, Loader2, Save } from 'lucide-react';
 import Link from 'next/link';
 import { IMAGE_GENERATION_MODELS, TEXT_GENERATION_MODELS, type ImageGenModel, type TextGenModel } from '@/lib/replicate-models';
 import { useToast } from '@/components/ui/Toast';
@@ -40,6 +40,7 @@ export default function MultiDesignPage() {
   const [removeBackground, setRemoveBackground] = useState(false);
   const [editingArea, setEditingArea] = useState<string | null>(null);
   const [editInstructions, setEditInstructions] = useState('');
+  const [savingDesigns, setSavingDesigns] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -154,6 +155,46 @@ export default function MultiDesignPage() {
     }
 
     toast.success(`${designs.length} diseños descargados. Ya puedes subirlos a Printful.`);
+  };
+
+  const handleSaveDesigns = async () => {
+    if (designs.length === 0) {
+      toast.info('Genera algún diseño antes de guardar.');
+      return;
+    }
+
+    setSavingDesigns(true);
+    try {
+      const results = await Promise.all(
+        designs.map((d) =>
+          fetch('/api/admin/designs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageUrl: d.imageUrl,
+              name: `${prompt?.slice(0, 40)} - ${d.label}`,
+              prompt,
+              placement: d.area,
+            }),
+          })
+        )
+      );
+
+      const failed = results.filter((r) => !r.ok).length;
+
+      if (failed === 0) {
+        toast.success(`${designs.length} diseños guardados.`);
+      } else if (failed < designs.length) {
+        toast.error(`Se guardaron ${designs.length - failed} de ${designs.length} diseños.`);
+      } else {
+        toast.error('No se pudieron guardar los diseños. Inténtalo de nuevo.');
+      }
+    } catch (error) {
+      console.error('Error saving designs:', error);
+      toast.error('No se pudieron guardar los diseños. Revisa tu conexión e inténtalo de nuevo.');
+    } finally {
+      setSavingDesigns(false);
+    }
   };
 
   const handleEditDesign = async (area: string) => {
@@ -529,15 +570,29 @@ export default function MultiDesignPage() {
               ))}
             </div>
 
-            <Button
-              type="button"
-              variant="primary"
-              onClick={handleDownloadAll}
-              className="w-full"
-            >
-              <Download className="w-5 h-5" aria-hidden="true" />
-              Descargar Todos los Diseños
-            </Button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant="primary"
+                onClick={handleDownloadAll}
+                className="w-full"
+              >
+                <Download className="w-5 h-5" aria-hidden="true" />
+                Descargar Todos los Diseños
+              </Button>
+
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleSaveDesigns}
+                loading={savingDesigns}
+                disabled={savingDesigns}
+                className="w-full"
+              >
+                <Save className="w-5 h-5" aria-hidden="true" />
+                {savingDesigns ? 'Guardando...' : 'Guardar diseños'}
+              </Button>
+            </div>
 
             <div className="mt-4 bg-info-bg border border-border rounded-card p-4">
               <p className="text-sm text-ink">

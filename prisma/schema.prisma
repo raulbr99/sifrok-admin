@@ -306,3 +306,30 @@ model WebhookLog {
   error       String?  @db.Text
   createdAt   DateTime @default(now())
 }
+
+// Colecciones de diseños (panel admin)
+model Collection {
+  id           String   @id @default(cuid())
+  name         String
+  description  String?  @db.Text
+  colors       String?  @db.Text // JSON: [{ hex, name }]
+  garmentTypes String?  @db.Text // JSON: string[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  designs      Design[]
+}
+
+// Diseños generados / persistidos (arte)
+model Design {
+  id           String      @id @default(cuid())
+  name         String
+  imageUrl     String      @db.Text
+  prompt       String?     @db.Text
+  placement    String?
+  size         String?
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+
+  @@index([collectionId])
+}

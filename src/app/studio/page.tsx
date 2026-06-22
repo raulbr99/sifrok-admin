@@ -453,6 +453,33 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
     }
   };
 
+  // Download all designs (one <a download> click per design, with a delay between each)
+  const handleDownloadAll = async () => {
+    const designsWithImages = placementDesigns.filter(pd => pd.imageUrl);
+    if (designsWithImages.length === 0) {
+      toast.info('Genera o sube al menos un diseño antes de descargar.');
+      return;
+    }
+
+    for (const pd of designsWithImages) {
+      try {
+        const link = document.createElement('a');
+        link.href = pd.imageUrl;
+        link.download = `design-${pd.placement}.png`;
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.error(`Error descargando ${pd.placement}:`, error);
+      }
+      // Esperar un poco entre descargas para evitar bloqueos del navegador
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
+
+    toast.success(`${designsWithImages.length} diseños descargados.`);
+  };
+
   // Count completed designs
   const completedDesigns = placementDesigns.filter(pd => pd.imageUrl).length;
   const totalPlacements = currentGarment?.placements.length || 0;
@@ -499,6 +526,9 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
     }
   };
 
+  // Saving state
+  const [isSaving, setIsSaving] = useState(false);
+
   // Save to collection
   const handleSaveToCollection = async () => {
     if (!collectionName.trim()) {
@@ -506,8 +536,72 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
       return;
     }
 
+    const designsWithImages = placementDesigns.filter(pd => pd.imageUrl);
+    if (designsWithImages.length === 0) {
+      toast.info('Genera o sube al menos un diseño antes de guardar.');
+      return;
+    }
+
     setShowValidationModal(false);
-    toast.info('Guardar colecciones estará disponible próximamente.');
+    setIsSaving(true);
+
+    try {
+      // 1) Create the collection
+      const collectionResponse = await fetch('/api/admin/collections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: collectionName,
+          garmentTypes: [garmentType],
+          colors: extractedColors.map(c => ({ hex: c.hex, name: c.name })),
+        }),
+      });
+
+      if (!collectionResponse.ok) {
+        toast.error('No se pudo crear la colección. Inténtalo de nuevo.');
+        return;
+      }
+
+      const createdCollection = await collectionResponse.json();
+
+      // 2) Create a design for each placement with an image
+      let failedDesigns = 0;
+      for (const pd of designsWithImages) {
+        try {
+          const designResponse = await fetch('/api/admin/designs', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageUrl: pd.imageUrl,
+              name: `${collectionName} - ${pd.placement}`,
+              placement: pd.placement,
+              size: pd.size,
+              collectionId: createdCollection.id,
+            }),
+          });
+
+          if (!designResponse.ok) {
+            failedDesigns++;
+          }
+        } catch (error) {
+          console.error(`Error saving design for ${pd.placement}:`, error);
+          failedDesigns++;
+        }
+      }
+
+      if (failedDesigns === designsWithImages.length) {
+        toast.error('La colección se creó pero no se pudo guardar ningún diseño.');
+      } else if (failedDesigns > 0) {
+        toast.error(`Colección guardada, pero ${failedDesigns} diseños fallaron.`);
+      } else {
+        toast.success('Colección guardada.');
+      }
+    } catch (error) {
+      console.error('Error saving collection:', error);
+      toast.error('No se pudo guardar la colección. Inténtalo de nuevo.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -534,11 +628,13 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               <Button
                 variant="primary"
                 onClick={handleValidateAndSave}
-                disabled={completedDesigns === 0 || isValidating}
-                loading={isValidating}
+                disabled={completedDesigns === 0 || isValidating || isSaving}
+                loading={isValidating || isSaving}
               >
                 {isValidating ? (
                   'Validando...'
+                ) : isSaving ? (
+                  'Guardando...'
                 ) : (
                   <>
                     <Save className="w-4 h-4" aria-hidden="true" />
@@ -899,7 +995,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 <Button
                   type="button"
                   variant="primary"
-                  onClick={() => toast.info('La descarga de diseños estará disponible próximamente.')}
+                  onClick={handleDownloadAll}
                   className="w-full py-3"
                 >
                   <Download className="w-5 h-5" aria-hidden="true" />

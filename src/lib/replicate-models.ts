@@ -234,17 +234,19 @@ export type ImageGenModel = keyof typeof IMAGE_GENERATION_MODELS;
 export type BgRemovalModel = keyof typeof BACKGROUND_REMOVAL_MODELS;
 export type TextGenModel = keyof typeof TEXT_GENERATION_MODELS;
 
-// Helper para obtener el modelo por ID
-export function getImageGenModel(id: ImageGenModel) {
-  return IMAGE_GENERATION_MODELS[id];
+// Helpers para obtener el modelo por ID.
+// Caen al modelo por defecto si el id es desconocido (p.ej. un slug de OpenRouter
+// guardado por Settings) en vez de devolver undefined y crashear en .id/.name.
+export function getImageGenModel(id: string) {
+  return IMAGE_GENERATION_MODELS[id as ImageGenModel] ?? IMAGE_GENERATION_MODELS['nano-banana-pro'];
 }
 
-export function getBgRemovalModel(id: BgRemovalModel) {
-  return BACKGROUND_REMOVAL_MODELS[id];
+export function getBgRemovalModel(id: string) {
+  return BACKGROUND_REMOVAL_MODELS[id as BgRemovalModel] ?? Object.values(BACKGROUND_REMOVAL_MODELS)[0];
 }
 
-export function getTextGenModel(id: TextGenModel) {
-  return TEXT_GENERATION_MODELS[id];
+export function getTextGenModel(id: string) {
+  return TEXT_GENERATION_MODELS[id as TextGenModel] ?? TEXT_GENERATION_MODELS['gemini-2.5-flash'];
 }
 
 // Modelos recomendados según el caso de uso

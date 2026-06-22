@@ -178,3 +178,50 @@ export async function syncPricesFromPrintful() {
   revalidatePath('/admin/products')
   return results
 }
+
+export interface PrintfulSyncVariantOption {
+  syncVariantId: number
+  productName: string
+  variantName: string
+  size?: string
+  color?: string
+  retailPrice?: string
+  thumbnail?: string
+}
+
+/**
+ * Lista las variantes sincronizadas en la tienda de Printful, para elegir el
+ * sync_variant_id al crear/editar un ProductMapping (poblar printfulSyncVariantId).
+ */
+export async function listPrintfulSyncVariants(): Promise<PrintfulSyncVariantOption[]> {
+  const session = await auth()
+  if (!session || session.user?.role !== 'admin') {
+    throw new Error('No autorizado')
+  }
+
+  const list = await printfulApi.get('/store/products')
+  const products: any[] = (list.data?.result || []).slice(0, 50)
+  const out: PrintfulSyncVariantOption[] = []
+
+  for (const p of products) {
+    try {
+      const detail = await printfulApi.get(`/store/products/${p.id}`)
+      const variants: any[] = detail.data?.result?.sync_variants || []
+      for (const v of variants) {
+        out.push({
+          syncVariantId: v.id,
+          productName: p.name,
+          variantName: v.name,
+          size: v.size,
+          color: v.color,
+          retailPrice: v.retail_price,
+          thumbnail: v.product?.image || p.thumbnail_url,
+        })
+      }
+    } catch {
+      // ignora un producto que falle, sigue con los demás
+    }
+  }
+
+  return out
+}
