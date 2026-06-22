@@ -175,15 +175,20 @@ export default function PromocionesAdminPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        role="status"
+        aria-live="polite"
+      >
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-ink border-t-transparent"></div>
+        <span className="sr-only">Cargando promociones...</span>
       </div>
     );
   }
 
   return (
-    <div className="py-12">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <div className="p-4 sm:p-6 md:p-8">
+      <div className="max-w-7xl mx-auto">
         <PageHeader
           title="Promociones y Descuentos"
           subtitle="Gestiona tus ofertas y códigos promocionales"
@@ -204,19 +209,21 @@ export default function PromocionesAdminPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {promotions.map((promo) => (
             <Card key={promo.id} className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-black text-ink">{promo.name}</h3>
+              <div className="flex justify-between items-start gap-2 mb-4">
+                <div className="min-w-0">
+                  <h3 className="text-xl font-black text-ink truncate">{promo.name}</h3>
                   {promo.code && (
-                    <div className="flex items-center gap-1 mt-2">
-                      <Tag className="w-4 h-4 text-ink-muted" aria-hidden="true" />
-                      <span className="font-mono font-bold text-ink">{promo.code}</span>
+                    <div className="flex items-center gap-1 mt-2 min-w-0">
+                      <Tag className="w-4 h-4 text-ink-muted shrink-0" aria-hidden="true" />
+                      <span className="font-mono font-bold text-ink truncate">{promo.code}</span>
                     </div>
                   )}
                 </div>
-                <Badge tone={promo.isActive ? 'success' : 'neutral'}>
-                  {promo.isActive ? 'Activa' : 'Inactiva'}
-                </Badge>
+                <div className="shrink-0">
+                  <Badge tone={promo.isActive ? 'success' : 'neutral'}>
+                    {promo.isActive ? 'Activa' : 'Inactiva'}
+                  </Badge>
+                </div>
               </div>
 
               <div className="mb-4">

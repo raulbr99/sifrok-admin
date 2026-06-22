@@ -111,8 +111,9 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen p-4 sm:p-6 md:p-8">
         <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-surface-2 rounded w-48" />
+          <div className="animate-pulse space-y-6" role="status" aria-live="polite">
+            <span className="sr-only">Cargando estadísticas…</span>
+            <div className="h-8 bg-surface-2 rounded-card w-48" />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="h-32 bg-surface-2 rounded-card" />
@@ -276,23 +277,27 @@ export default function AdminDashboard() {
               Top Productos (30 días)
             </h2>
             {stats.topProducts.length > 0 ? (
-              <div className="space-y-4">
+              <ol className="space-y-4">
                 {stats.topProducts.map((product, index) => (
-                  <div key={product.productId} className="flex items-center gap-4">
-                    <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-accent-ink">
+                  <li key={product.productId} className="flex items-center gap-4">
+                    <div
+                      className="w-8 h-8 bg-accent rounded-full flex items-center justify-center font-bold text-accent-ink"
+                      aria-hidden="true"
+                    >
                       {index + 1}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-ink truncate">
+                        <span className="sr-only">Puesto {index + 1}: </span>
                         {product.name}
                       </p>
                       <p className="text-sm text-ink-muted">
                         {product.quantity} unidades en {product.orders} pedidos
                       </p>
                     </div>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ol>
             ) : (
               <p className="text-ink-muted">No hay datos aún</p>
             )}
@@ -308,15 +313,15 @@ export default function AdminDashboard() {
                 {stats.recentOrders.slice(0, 5).map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-3 bg-surface-2 rounded-card"
+                    className="flex items-center justify-between gap-3 p-3 bg-surface-2 rounded-card"
                   >
-                    <div>
-                      <p className="font-medium text-ink">
+                    <div className="min-w-0">
+                      <p className="font-medium text-ink truncate">
                         #{order.id.slice(0, 8).toUpperCase()}
                       </p>
-                      <p className="text-sm text-ink-muted">{order.customer}</p>
+                      <p className="text-sm text-ink-muted truncate">{order.customer}</p>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       <p className="font-medium text-ink">{formatCurrency(order.total)}</p>
                       <Badge tone={getStatusTone(order.status)}>
                         {order.status}

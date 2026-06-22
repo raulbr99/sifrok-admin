@@ -207,7 +207,14 @@ export default function ProfitabilityPage() {
                     %
                   </span>
                 </div>
-                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
+                <div
+                  className="h-3 bg-surface-2 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label="Costes de produccion sobre ingresos"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(stats.totalRevenue > 0 ? (stats.totalCosts / stats.totalRevenue) * 100 : 0)}
+                >
                   <div
                     className="h-full bg-warning rounded-full"
                     style={{
@@ -227,7 +234,14 @@ export default function ProfitabilityPage() {
                     %
                   </span>
                 </div>
-                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
+                <div
+                  className="h-3 bg-surface-2 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label="Comisiones Stripe sobre ingresos"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(stats.totalRevenue > 0 ? (stats.totalFees / stats.totalRevenue) * 100 : 0)}
+                >
                   <div
                     className="h-full bg-info rounded-full"
                     style={{
@@ -242,7 +256,14 @@ export default function ProfitabilityPage() {
                   <span className="text-sm text-ink-muted">Beneficio Neto</span>
                   <span className="text-sm font-medium text-ink">{stats.margin.toFixed(1)}%</span>
                 </div>
-                <div className="h-3 bg-surface-2 rounded-full overflow-hidden">
+                <div
+                  className="h-3 bg-surface-2 rounded-full overflow-hidden"
+                  role="progressbar"
+                  aria-label="Margen de beneficio neto"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={Math.round(Math.abs(stats.margin))}
+                >
                   <div
                     className={`h-full rounded-full ${stats.margin >= 0 ? 'bg-success' : 'bg-danger'}`}
                     style={{

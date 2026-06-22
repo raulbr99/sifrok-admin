@@ -283,25 +283,25 @@ export default function ProductsPage() {
           <table className="w-full">
           <thead className="bg-surface-2 border-b border-border">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Producto
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 ID Local
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Printful Variant ID
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Coste
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Venta
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Margen
               </th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase">
+              <th className="px-4 py-3 text-left text-xs font-semibold text-ink-muted uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
@@ -309,7 +309,12 @@ export default function ProductsPage() {
           <tbody className="divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink-muted">
+                <td
+                  colSpan={7}
+                  className="px-4 py-8 text-center text-ink-muted"
+                  role="status"
+                  aria-live="polite"
+                >
                   Cargando productos...
                 </td>
               </tr>
@@ -325,21 +330,21 @@ export default function ProductsPage() {
                 return (
                   <tr key={mapping.id} className="hover:bg-surface-2">
                     <td className="px-4 py-3">
-                      <div>
-                        <p className="font-medium text-ink">{mapping.productName}</p>
+                      <div className="min-w-0 max-w-[16rem]">
+                        <p className="font-medium text-ink truncate">{mapping.productName}</p>
                         {mapping.category && (
-                          <p className="text-xs text-ink-muted">{mapping.category}</p>
+                          <p className="text-xs text-ink-muted truncate">{mapping.category}</p>
                         )}
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded">
+                      <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded-card">
                         {mapping.localProductId}
                       </code>
                     </td>
                     <td className="px-4 py-3">
                       {mapping.printfulSyncVariantId != null ? (
-                        <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded">
+                        <code className="text-xs bg-surface-2 text-ink-muted px-2 py-1 rounded-card">
                           {mapping.printfulSyncVariantId}
                         </code>
                       ) : (

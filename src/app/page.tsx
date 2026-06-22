@@ -173,9 +173,9 @@ export default function DesignGeneratorPage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" role="status" aria-live="polite">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-accent border-t-transparent mx-auto mb-4" aria-hidden="true"></div>
           <p className="text-ink-muted">Cargando...</p>
         </div>
       </div>
@@ -328,16 +328,23 @@ export default function DesignGeneratorPage() {
             <h3 className="text-xl font-bold text-ink mb-4">Historial de esta sesión</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {generatedImages.map((img, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={img}
-                    alt={`Diseño ${index + 1}`}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-32 object-cover rounded-card cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setGeneratedImage(img)}
-                  />
+                <div key={img} className="relative group">
                   <button
+                    type="button"
+                    onClick={() => setGeneratedImage(img)}
+                    aria-label={`Usar diseño ${index + 1}`}
+                    className="block w-full rounded-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+                  >
+                    <img
+                      src={img}
+                      alt={`Diseño ${index + 1}`}
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-32 object-cover rounded-card hover:opacity-80 transition-opacity"
+                    />
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => handleDownloadImage(img)}
                     aria-label={`Descargar diseño ${index + 1}`}
                     className="absolute bottom-2 right-2 bg-panel/70 hover:bg-panel text-on-panel p-2 rounded-btn opacity-0 group-hover:opacity-100 transition-opacity"

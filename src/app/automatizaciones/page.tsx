@@ -197,7 +197,8 @@ export default function BatchGeneratorPage() {
             )}
 
             {batchLoading && batchResults.length === 0 && (
-              <div className="text-center py-12">
+              <div className="text-center py-12" role="status" aria-live="polite">
+                <span className="sr-only">Cargando…</span>
                 <Loader2 className="w-16 h-16 mx-auto mb-4 text-ink animate-spin" aria-hidden="true" />
                 <p className="text-ink-muted">Iniciando generación...</p>
               </div>
@@ -240,7 +241,10 @@ export default function BatchGeneratorPage() {
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           {batchLoading && result.index === batchResults.length ? (
-                            <Loader2 className="w-8 h-8 text-ink animate-spin" aria-hidden="true" />
+                            <span role="status" aria-live="polite">
+                              <span className="sr-only">Generando diseño {result.index}…</span>
+                              <Loader2 className="w-8 h-8 text-ink animate-spin" aria-hidden="true" />
+                            </span>
                           ) : (
                             <XCircle className="w-8 h-8 text-danger" aria-hidden="true" />
                           )}

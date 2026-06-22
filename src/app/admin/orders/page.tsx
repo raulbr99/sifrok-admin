@@ -179,9 +179,9 @@ export default function OrdersPage() {
         accessorKey: 'user',
         header: 'Cliente',
         cell: ({ row }) => (
-          <div>
-            <p className="font-medium">{row.original.user.name || 'Sin nombre'}</p>
-            <p className="text-xs text-ink-muted">{row.original.user.email}</p>
+          <div className="min-w-0 max-w-[16rem]">
+            <p className="font-medium truncate">{row.original.user.name || 'Sin nombre'}</p>
+            <p className="text-xs text-ink-muted truncate">{row.original.user.email}</p>
           </div>
         ),
       },
@@ -428,7 +428,12 @@ export default function OrdersPage() {
             <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
-                  <td colSpan={columns.length} className="px-4 py-8 text-center text-ink-muted">
+                  <td
+                    colSpan={columns.length}
+                    className="px-4 py-8 text-center text-ink-muted"
+                    role="status"
+                    aria-live="polite"
+                  >
                     Cargando pedidos...
                   </td>
                 </tr>

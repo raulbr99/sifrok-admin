@@ -3,19 +3,11 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Upload,
-  Move,
-  Maximize2,
   Palette,
   Shirt,
-  Layers,
   Download,
   Save,
-  RotateCcw,
-  ZoomIn,
-  ZoomOut,
-  FlipHorizontal,
   Sparkles,
-  Plus,
   X,
   Loader2,
   Wand2,
@@ -29,12 +21,11 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import Link from 'next/link';
-import { validateImageForPrint, getValidationRequirements } from '@/actions/studio';
+import { validateImageForPrint } from '@/actions/studio';
 import Modal from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
-import Badge from '@/components/ui/Badge';
 import { inputClass } from '@/components/ui/Field';
 
 // Garment types with their placement areas
@@ -291,6 +282,7 @@ export default function DesignStudioPage() {
     setPlacementDesigns(prev => prev.map(pd => ({ ...pd, isGenerating: true, imageUrl: '' })));
 
     const totalPlacements = currentGarment.placements.length;
+    let failedCount = 0;
 
     for (let i = 0; i < totalPlacements; i++) {
       const placementId = currentGarment.placements[i];
@@ -322,6 +314,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
               : pd
           ));
         } else {
+          failedCount++;
           setPlacementDesigns(prev => prev.map(pd =>
             pd.placement === placementId
               ? { ...pd, isGenerating: false }
@@ -330,6 +323,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
         }
       } catch (error) {
         console.error(`Error generating for ${placementId}:`, error);
+        failedCount++;
         setPlacementDesigns(prev => prev.map(pd =>
           pd.placement === placementId
             ? { ...pd, isGenerating: false }
@@ -342,6 +336,14 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
 
     setIsGenerating(false);
     setSelectedPlacement(currentGarment.placements[0]);
+
+    if (failedCount === totalPlacements) {
+      toast.error('No se pudo generar ningún diseño. Revisa tu conexión e inténtalo de nuevo.');
+    } else if (failedCount > 0) {
+      toast.error(`${failedCount} de ${totalPlacements} ubicaciones fallaron. Puedes regenerarlas individualmente.`);
+    } else {
+      toast.success('Diseños generados.');
+    }
   };
 
   // Regenerate single placement
@@ -387,6 +389,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             ? { ...pd, isGenerating: false }
             : pd
         ));
+        toast.error('No se pudo regenerar el diseño. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error(`Error regenerating ${placementId}:`, error);
@@ -395,6 +398,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
           ? { ...pd, isGenerating: false }
           : pd
       ));
+      toast.error('No se pudo regenerar el diseño. Inténtalo de nuevo.');
     }
   };
 
@@ -420,9 +424,12 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
             ? { ...pd, imageUrl: data.imageUrl }
             : pd
         ));
+      } else {
+        toast.error('No se pudo quitar el fondo. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error removing background:', error);
+      toast.error('No se pudo quitar el fondo. Inténtalo de nuevo.');
     } finally {
       setRemovingBgFor(null);
     }
@@ -499,23 +506,8 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
       return;
     }
 
-    const designsToSave = placementDesigns
-      .filter(pd => pd.imageUrl)
-      .map(pd => ({
-        placement: pd.placement,
-        imageUrl: pd.imageUrl,
-        garmentType: garmentType,
-      }));
-
-    // Here you would save to your collections API
-    console.log('Saving to collection:', {
-      name: collectionName,
-      designs: designsToSave,
-      colors: extractedColors,
-    });
-
     setShowValidationModal(false);
-    toast.success('Colección guardada.');
+    toast.info('Guardar colecciones estará disponible próximamente.');
   };
 
   return (
@@ -648,17 +640,29 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                   return (
                     <div
                       key={pd.placement}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={selectedPlacement === pd.placement}
+                      aria-label={`Seleccionar ubicación ${config?.name ?? pd.placement}`}
                       onClick={() => setSelectedPlacement(pd.placement)}
-                      className={`relative aspect-square rounded-card border-2 overflow-hidden cursor-pointer transition-colors ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedPlacement(pd.placement);
+                        }
+                      }}
+                      className={`relative aspect-square rounded-card border-2 overflow-hidden cursor-pointer transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                         selectedPlacement === pd.placement
                           ? 'border-ink'
                           : 'border-border hover:border-border-strong'
                       }`}
                     >
                       {pd.isGenerating || isRemovingBg ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface-2">
+                        <div className="w-full h-full flex flex-col items-center justify-center bg-surface-2" role="status" aria-live="polite">
                           <Loader2 className="w-8 h-8 animate-spin text-ink" aria-hidden="true" />
-                          {isRemovingBg && <span className="text-xs text-ink-muted mt-1">Quitando fondo...</span>}
+                          {isRemovingBg
+                            ? <span className="text-xs text-ink-muted mt-1">Quitando fondo...</span>
+                            : <span className="sr-only">Generando diseño…</span>}
                         </div>
                       ) : pd.imageUrl ? (
                         <img
@@ -678,7 +682,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                       </div>
                       {pd.imageUrl && !isRemovingBg && (
                         <>
-                          <div className="absolute top-1 right-1 bg-success text-white rounded-full p-0.5">
+                          <div className="absolute top-1 right-1 bg-success text-on-panel rounded-full p-0.5">
                             <Check className="w-3 h-3" aria-hidden="true" />
                           </div>
                           <button
@@ -711,7 +715,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 <div className="flex flex-wrap gap-2">
                   {extractedColors.map((color, index) => (
                     <div
-                      key={index}
+                      key={`${color.hex}-${index}`}
                       className="flex items-center gap-2 bg-surface-2 border border-border rounded-btn p-2"
                     >
                       <div
@@ -796,7 +800,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                       alt={selectedPlacement ? `Diseño seleccionado para ${PLACEMENTS[selectedPlacement]?.name}` : 'Diseño seleccionado'}
                       loading="eager"
                       decoding="async"
-                      className="w-full h-48 object-contain rounded-lg bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
+                      className="w-full h-48 object-contain rounded-card bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHJlY3Qgd2lkdGg9IjEwIiBoZWlnaHQ9IjEwIiBmaWxsPSIjZjBmMGYwIi8+PHJlY3QgeD0iMTAiIHk9IjEwIiB3aWR0aD0iMTAiIGhlaWdodD0iMTAiIGZpbGw9IiNmMGYwZjAiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')]"
                     />
                   </div>
                 ) : (
@@ -895,6 +899,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
                 <Button
                   type="button"
                   variant="primary"
+                  onClick={() => toast.info('La descarga de diseños estará disponible próximamente.')}
                   className="w-full py-3"
                 >
                   <Download className="w-5 h-5" aria-hidden="true" />

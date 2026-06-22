@@ -264,7 +264,7 @@ export default function CollectionsPage() {
                           alt={`Diseño de la colección ${collection.name}`}
                           loading="lazy"
                           decoding="async"
-                          className="w-full h-full object-cover rounded"
+                          className="w-full h-full object-cover rounded-card"
                         />
                       ))}
                     </div>
@@ -279,7 +279,7 @@ export default function CollectionsPage() {
                     {collection.colors.slice(0, 5).map((color, i) => (
                       <div
                         key={i}
-                        className="w-5 h-5 rounded-full border-2 border-white shadow"
+                        className="w-5 h-5 rounded-full border-2 border-surface shadow"
                         style={{ backgroundColor: color.hex }}
                       />
                     ))}
@@ -563,14 +563,16 @@ export default function CollectionsPage() {
                             className="w-full h-full object-contain"
                           />
                           <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                            <button
-                              className="p-2 bg-surface rounded-btn hover:bg-surface-2"
+                            <Link
+                              href="/studio"
+                              className="p-2 bg-surface text-ink rounded-btn hover:bg-surface-2"
                               title="Editar en Studio"
                               aria-label="Editar en Studio"
                             >
                               <Edit3 className="w-4 h-4" aria-hidden="true" />
-                            </button>
+                            </Link>
                             <button
+                              type="button"
                               onClick={() => removeDesignFromCollection(selectedCollection.id, design.id)}
                               className="p-2 bg-danger text-white rounded-btn hover:brightness-110"
                               title="Eliminar"

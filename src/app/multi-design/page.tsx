@@ -323,7 +323,7 @@ export default function MultiDesignPage() {
                 type="checkbox"
                 checked={removeBackground}
                 onChange={(e) => setRemoveBackground(e.target.checked)}
-                className="w-5 h-5 accent-accent border border-border-strong rounded"
+                className="w-5 h-5 accent-accent border border-border-strong rounded-btn"
                 disabled={generating}
               />
               <span className="text-ink font-medium">
@@ -486,7 +486,7 @@ export default function MultiDesignPage() {
                       alt={`Diseño generado para ${design.label}`}
                       loading="lazy"
                       decoding="async"
-                      className="w-full h-auto rounded"
+                      className="w-full h-auto rounded-card"
                     />
                   </div>
 

@@ -12,6 +12,7 @@ import {
   Tag,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useToast } from '@/components/ui/Toast';
 import Button from '@/components/ui/Button';
 import Card from '@/components/ui/Card';
@@ -60,6 +61,7 @@ const STYLES = [
 
 export default function IdeasPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [theme, setTheme] = useState('');
   const [customTheme, setCustomTheme] = useState('');
   const [style, setStyle] = useState('');
@@ -120,10 +122,10 @@ export default function IdeasPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  const usePrompt = (prompt: string) => {
-    // Save to localStorage and redirect to generator
+  const applyPrompt = (prompt: string) => {
+    // Save to localStorage and navigate to the generator (client-side).
     localStorage.setItem('pending-prompt', prompt);
-    window.location.href = '/';
+    router.push('/');
   };
 
   return (
@@ -267,7 +269,8 @@ export default function IdeasPage() {
             )}
 
             {loading && (
-              <Card className="p-12 text-center">
+              <Card className="p-12 text-center" role="status" aria-live="polite">
+                <span className="sr-only">Cargando…</span>
                 <Loader2 className="w-16 h-16 mx-auto mb-4 text-ink animate-spin" aria-hidden="true" />
                 <p className="text-ink-muted">Generando ideas creativas...</p>
                 <p className="text-ink-subtle text-sm mt-2">Esto puede tardar unos segundos</p>
@@ -318,7 +321,7 @@ export default function IdeasPage() {
                         </button>
                         <Button
                           size="sm"
-                          onClick={() => usePrompt(idea.prompt)}
+                          onClick={() => applyPrompt(idea.prompt)}
                           title="Usar en generador"
                         >
                           <Wand2 className="w-3 h-3" aria-hidden="true" />
