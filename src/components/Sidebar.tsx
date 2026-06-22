@@ -19,6 +19,7 @@ import {
   Menu,
   X,
   LayoutGrid,
+  Percent,
 } from 'lucide-react';
 
 const menuItems = [
@@ -35,6 +36,7 @@ const adminItems = [
   { href: '/admin/orders', label: 'Pedidos', icon: Package },
   { href: '/admin/profitability', label: 'Rentabilidad', icon: TrendingUp },
   { href: '/admin/products', label: 'Productos', icon: Tags },
+  { href: '/promociones', label: 'Promociones', icon: Percent },
 ];
 
 const externalLinks = [

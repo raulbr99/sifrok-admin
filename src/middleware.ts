@@ -26,6 +26,7 @@ export const config = {
   // Protege TODO el panel (antes solo /admin dejaba abiertas las herramientas).
   matcher: [
     '/',
+    '/dashboard/:path*',
     '/studio/:path*',
     '/ideas/:path*',
     '/collections/:path*',
