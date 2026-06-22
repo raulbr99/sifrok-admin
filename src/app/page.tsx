@@ -4,10 +4,12 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Download, Sparkles, Wand2, RotateCcw, ExternalLink } from 'lucide-react';
+import { useToast } from '@/components/ui/Toast';
 
 export default function DesignGeneratorPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
   const [aiPrompt, setAiPrompt] = useState<string>('');
   const [generating, setGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string>('');
@@ -38,7 +40,7 @@ export default function DesignGeneratorPage() {
 
   const handleEnhancePrompt = async () => {
     if (!aiPrompt.trim()) {
-      alert('Por favor escribe una descripción primero');
+      toast.info('Escribe primero una descripción para poder mejorarla.');
       return;
     }
 
@@ -59,11 +61,11 @@ export default function DesignGeneratorPage() {
         setAiPrompt(data.enhancedPrompt);
         setEnhanceInstructions('');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error('No se pudo mejorar el prompt. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error enhancing prompt:', error);
-      alert('Error mejorando el prompt');
+      toast.error('No se pudo mejorar el prompt. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       setEnhancing(false);
     }
@@ -71,7 +73,7 @@ export default function DesignGeneratorPage() {
 
   const handleGenerateAI = async () => {
     if (!aiPrompt.trim()) {
-      alert('Por favor escribe una descripción para generar la imagen');
+      toast.info('Escribe una descripción para generar la imagen.');
       return;
     }
 
@@ -96,11 +98,11 @@ export default function DesignGeneratorPage() {
         // Save to localStorage for Studio access
         localStorage.setItem('generated-images', JSON.stringify(updatedImages));
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error('No se pudo generar la imagen. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error generating image:', error);
-      alert('Error generando imagen con IA');
+      toast.error('No se pudo generar la imagen. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }
@@ -108,7 +110,7 @@ export default function DesignGeneratorPage() {
 
   const handleEditImage = async () => {
     if (!editPrompt.trim() || !generatedImage) {
-      alert('Por favor escribe qué quieres cambiar de la imagen');
+      toast.info('Escribe qué quieres cambiar de la imagen.');
       return;
     }
 
@@ -131,11 +133,11 @@ export default function DesignGeneratorPage() {
         setGeneratedImages(prev => [data.imageUrl, ...prev].slice(0, 20));
         setEditPrompt('');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error('No se pudo editar la imagen. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error editing image:', error);
-      alert('Error editando imagen con IA');
+      toast.error('No se pudo editar la imagen. Revisa tu conexión e inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }
@@ -155,7 +157,7 @@ export default function DesignGeneratorPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error descargando imagen:', error);
-      alert('Error al descargar la imagen');
+      toast.error('No se pudo descargar la imagen. Inténtalo de nuevo.');
     }
   };
 

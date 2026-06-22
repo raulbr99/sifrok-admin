@@ -31,6 +31,7 @@ import {
 import Link from 'next/link';
 import { validateImageForPrint, getValidationRequirements } from '@/actions/studio';
 import Modal from '@/components/ui/Modal';
+import { useToast } from '@/components/ui/Toast';
 
 // Garment types with their placement areas
 const GARMENT_TYPES = [
@@ -128,6 +129,8 @@ interface ExtractedColor {
 }
 
 export default function DesignStudioPage() {
+  const { toast } = useToast();
+
   // Core state
   const [garmentType, setGarmentType] = useState('tshirt');
   const [designPrompt, setDesignPrompt] = useState('');
@@ -447,7 +450,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
   const handleValidateAndSave = async () => {
     const designsWithImages = placementDesigns.filter(pd => pd.imageUrl);
     if (designsWithImages.length === 0) {
-      alert('No hay disenios para guardar');
+      toast.info('Genera o sube al menos un diseño antes de guardar.');
       return;
     }
 
@@ -488,7 +491,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
   // Save to collection
   const handleSaveToCollection = async () => {
     if (!collectionName.trim()) {
-      alert('Por favor ingresa un nombre para la coleccion');
+      toast.info('Ponle un nombre a la colección para poder guardarla.');
       return;
     }
 
@@ -508,7 +511,7 @@ Output: Single isolated design element ONLY, no background, no borders, no frame
     });
 
     setShowValidationModal(false);
-    alert('Coleccion guardada exitosamente!');
+    toast.success('Colección guardada.');
   };
 
   return (

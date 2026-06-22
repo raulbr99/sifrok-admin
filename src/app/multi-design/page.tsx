@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Sparkles, Download, ArrowLeft, Zap, Award, DollarSign, Brain } from 'lucide-react';
 import Link from 'next/link';
 import { IMAGE_GENERATION_MODELS, TEXT_GENERATION_MODELS, type ImageGenModel, type TextGenModel } from '@/lib/replicate-models';
+import { useToast } from '@/components/ui/Toast';
 
 interface DesignArea {
   area: string;
@@ -22,6 +23,7 @@ const PRODUCT_TYPES = {
 export default function MultiDesignPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState('');
   const [productType, setProductType] = useState<keyof typeof PRODUCT_TYPES>('tshirt');
   const [generating, setGenerating] = useState(false);
@@ -42,7 +44,7 @@ export default function MultiDesignPage() {
 
   const handleEnhancePrompt = async () => {
     if (!prompt.trim()) {
-      alert('Por favor escribe una descripción primero');
+      toast.info('Escribe una descripción antes de mejorar el prompt.');
       return;
     }
 
@@ -66,11 +68,11 @@ export default function MultiDesignPage() {
         setPrompt(data.enhancedPrompt);
         setEnhanceInstructions('');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error(`No se pudo mejorar el prompt. ${data.error ?? 'Inténtalo de nuevo.'}`);
       }
     } catch (error) {
       console.error('Error enhancing prompt:', error);
-      alert('Error mejorando el prompt');
+      toast.error('No se pudo mejorar el prompt. Inténtalo de nuevo.');
     } finally {
       setEnhancing(false);
     }
@@ -78,7 +80,7 @@ export default function MultiDesignPage() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      alert('Por favor escribe una descripción para los diseños');
+      toast.info('Escribe una descripción para generar los diseños.');
       return;
     }
 
@@ -106,13 +108,13 @@ export default function MultiDesignPage() {
 
       if (response.ok) {
         setDesigns(data.areas);
-        alert('¡Diseños generados exitosamente!');
+        toast.success('Diseños generados.');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error(`No se pudieron generar los diseños. ${data.error ?? 'Inténtalo de nuevo.'}`);
       }
     } catch (error) {
       console.error('Error generating designs:', error);
-      alert('Error generando diseños');
+      toast.error('No se pudieron generar los diseños. Inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }
@@ -130,13 +132,13 @@ export default function MultiDesignPage() {
       document.body.removeChild(link);
     } catch (error) {
       console.error('Error descargando imagen:', error);
-      alert('Error al descargar la imagen');
+      toast.error('No se pudo descargar la imagen. Inténtalo de nuevo.');
     }
   };
 
   const handleDownloadAll = async () => {
     if (designs.length === 0) {
-      alert('No hay diseños para descargar');
+      toast.info('Genera algún diseño antes de descargar.');
       return;
     }
 
@@ -146,12 +148,12 @@ export default function MultiDesignPage() {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    alert(`¡${designs.length} diseños descargados! Ahora puedes subirlos manualmente a Printful.`);
+    toast.success(`${designs.length} diseños descargados. Ya puedes subirlos a Printful.`);
   };
 
   const handleEditDesign = async (area: string) => {
     if (!editInstructions.trim()) {
-      alert('Por favor escribe qué quieres cambiar');
+      toast.info('Escribe qué quieres cambiar del diseño.');
       return;
     }
 
@@ -186,13 +188,13 @@ export default function MultiDesignPage() {
         );
         setEditingArea(null);
         setEditInstructions('');
-        alert('¡Diseño editado exitosamente!');
+        toast.success('Diseño actualizado.');
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error(`No se pudo editar el diseño. ${data.error ?? 'Inténtalo de nuevo.'}`);
       }
     } catch (error) {
       console.error('Error editing design:', error);
-      alert('Error editando diseño');
+      toast.error('No se pudo editar el diseño. Inténtalo de nuevo.');
     } finally {
       setGenerating(false);
     }

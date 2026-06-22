@@ -15,6 +15,8 @@ import {
   deleteProductMapping,
 } from '@/actions/products'
 import Modal from '@/components/ui/Modal'
+import { useToast } from '@/components/ui/Toast'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 // Utility function to calculate margin
 function calculateMargin(basePrice: number, salePrice: number): number {
@@ -58,6 +60,8 @@ export default function ProductsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [formData, setFormData] = useState<ProductMappingForm>(EMPTY_FORM)
+  const { toast } = useToast()
+  const confirm = useConfirm()
 
   useEffect(() => {
     loadMappings()
@@ -79,26 +83,39 @@ export default function ProductsPage() {
     try {
       if (editingId) {
         await updateProductMapping(editingId, formData)
+        toast.success('Mapeo guardado.')
       } else {
         await createProductMapping(formData)
+        toast.success('Mapeo creado.')
       }
       setShowForm(false)
       setEditingId(null)
       resetForm()
       loadMappings()
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error('No se pudo guardar el mapeo. Inténtalo de nuevo.')
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Estas seguro de eliminar este mapeo?')) return
+    const mapping = mappings.find((m) => m.id === id)
+    if (
+      !(await confirm({
+        title: mapping ? `¿Eliminar "${mapping.productName}"?` : '¿Eliminar este mapeo?',
+        message: 'Se eliminará el mapeo con Printful. Esta acción no se puede deshacer.',
+        confirmLabel: 'Eliminar',
+        tone: 'danger',
+      }))
+    ) {
+      return
+    }
 
     try {
       await deleteProductMapping(id)
+      toast.success('Mapeo eliminado.')
       loadMappings()
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error('No se pudo eliminar el mapeo. Inténtalo de nuevo.')
     }
   }
 

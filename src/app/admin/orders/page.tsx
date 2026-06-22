@@ -26,6 +26,8 @@ import {
 import { getOrders, calculateOrderProfit } from '@/actions/orders'
 import { processRefund } from '@/actions/stripe'
 import { syncPrintfulOrderStatus } from '@/actions/printful'
+import { useToast } from '@/components/ui/Toast'
+import { useConfirm } from '@/components/ui/ConfirmDialog'
 
 interface Order {
   id: string
@@ -81,6 +83,8 @@ export default function OrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [sorting, setSorting] = useState<SortingState>([])
   const [processingId, setProcessingId] = useState<string | null>(null)
+  const { toast } = useToast()
+  const confirm = useConfirm()
 
   useEffect(() => {
     loadOrders()
@@ -99,7 +103,18 @@ export default function OrdersPage() {
   }
 
   async function handleRefund(orderId: string) {
-    if (!confirm('Estas seguro de procesar el reembolso? Esta accion no se puede deshacer.')) {
+    const order = orders.find((o) => o.id === orderId)
+    const amountLabel = order
+      ? `${order.total.toFixed(2)} ${order.currency.toUpperCase()}`
+      : 'el importe del pedido'
+    if (
+      !(await confirm({
+        title: `¿Reembolsar ${amountLabel}?`,
+        message: `Se devolverá el pago del pedido ${orderId.slice(0, 8)} al cliente. Esta acción no se puede deshacer.`,
+        confirmLabel: 'Reembolsar',
+        tone: 'danger',
+      }))
+    ) {
       return
     }
 
@@ -107,13 +122,13 @@ export default function OrdersPage() {
     try {
       const result = await processRefund(orderId)
       if (result.success) {
-        alert(`Reembolso procesado: ${result.amount} EUR`)
+        toast.success(`Reembolso procesado: ${result.amount} EUR.`)
         loadOrders()
       } else {
-        alert(`Error: ${result.error}`)
+        toast.error(`No se pudo procesar el reembolso. ${result.error}`)
       }
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error(`No se pudo procesar el reembolso. Inténtalo de nuevo.`)
     } finally {
       setProcessingId(null)
     }
@@ -123,9 +138,10 @@ export default function OrdersPage() {
     setProcessingId(orderId)
     try {
       await syncPrintfulOrderStatus(orderId)
+      toast.success('Estado de Printful sincronizado.')
       loadOrders()
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error('No se pudo sincronizar con Printful. Inténtalo de nuevo.')
     } finally {
       setProcessingId(null)
     }
@@ -135,10 +151,10 @@ export default function OrdersPage() {
     setProcessingId(orderId)
     try {
       const profit = await calculateOrderProfit(orderId)
-      alert(`Profit calculado: ${profit.netProfit.toFixed(2)} EUR (Margen: ${profit.margin.toFixed(1)}%)`)
+      toast.success(`Profit calculado: ${profit.netProfit.toFixed(2)} EUR (margen ${profit.margin.toFixed(1)}%).`)
       loadOrders()
     } catch (error: any) {
-      alert(`Error: ${error.message}`)
+      toast.error('No se pudo calcular el profit. Inténtalo de nuevo.')
     } finally {
       setProcessingId(null)
     }

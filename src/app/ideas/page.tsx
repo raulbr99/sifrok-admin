@@ -12,6 +12,7 @@ import {
   Tag,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
 
 interface Idea {
   title: string;
@@ -54,6 +55,7 @@ const STYLES = [
 ];
 
 export default function IdeasPage() {
+  const { toast } = useToast();
   const [theme, setTheme] = useState('');
   const [customTheme, setCustomTheme] = useState('');
   const [style, setStyle] = useState('');
@@ -74,7 +76,7 @@ export default function IdeasPage() {
   const handleGenerate = async () => {
     const selectedTheme = customTheme.trim() || theme;
     if (!selectedTheme) {
-      alert('Por favor selecciona o escribe un tema');
+      toast.info('Elige un tema o escribe el tuyo para generar ideas.');
       return;
     }
 
@@ -98,11 +100,11 @@ export default function IdeasPage() {
       if (response.ok && data.ideas) {
         setIdeas(data.ideas);
       } else {
-        alert(`Error: ${data.error}`);
+        toast.error(data.error || 'No se pudieron generar las ideas. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error generating ideas:', error);
-      alert('Error generando ideas');
+      toast.error('No se pudieron generar las ideas. Inténtalo de nuevo.');
     } finally {
       setLoading(false);
     }

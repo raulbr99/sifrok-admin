@@ -5,6 +5,8 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Tag, Calendar, TrendingUp } from 'lucide-react';
 import Modal from '@/components/ui/Modal';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface Promotion {
   id: string;
@@ -27,6 +29,8 @@ interface Promotion {
 export default function PromocionesAdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -86,22 +90,29 @@ export default function PromocionesAdminPage() {
       });
 
       if (response.ok) {
-        alert(editingPromotion ? 'Promoción actualizada' : 'Promoción creada');
+        toast.success(editingPromotion ? 'Promoción actualizada.' : 'Promoción creada.');
         setShowModal(false);
         resetForm();
         fetchPromotions();
       } else {
         const error = await response.json();
-        alert(`Error: ${error.error}`);
+        toast.error(error.error || 'No se pudo guardar la promoción. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error saving promotion:', error);
-      alert('Error al guardar promoción');
+      toast.error('No se pudo guardar la promoción. Inténtalo de nuevo.');
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Eliminar esta promoción?')) return;
+    const promotion = promotions.find((p) => p.id === id);
+    const confirmed = await confirm({
+      title: `¿Eliminar "${promotion?.name ?? 'esta promoción'}"?`,
+      message: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
 
     try {
       const response = await fetch(`/api/admin/promotions/${id}`, {
@@ -109,12 +120,14 @@ export default function PromocionesAdminPage() {
       });
 
       if (response.ok) {
-        alert('Promoción eliminada');
+        toast.success('Promoción eliminada.');
         fetchPromotions();
+      } else {
+        toast.error('No se pudo eliminar la promoción. Inténtalo de nuevo.');
       }
     } catch (error) {
       console.error('Error deleting promotion:', error);
-      alert('Error al eliminar promoción');
+      toast.error('No se pudo eliminar la promoción. Inténtalo de nuevo.');
     }
   };
 

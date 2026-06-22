@@ -18,6 +18,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Modal from '@/components/ui/Modal';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 
 interface Design {
   id: string;
@@ -50,6 +52,8 @@ const GARMENT_OPTIONS = [
 ];
 
 export default function CollectionsPage() {
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [showNewModal, setShowNewModal] = useState(false);
   const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
@@ -81,7 +85,7 @@ export default function CollectionsPage() {
 
   const createCollection = () => {
     if (!newName.trim()) {
-      alert('El nombre es requerido');
+      toast.error('Escribe un nombre para la colección.');
       return;
     }
 
@@ -99,6 +103,7 @@ export default function CollectionsPage() {
     saveCollections([...collections, collection]);
     resetForm();
     setShowNewModal(false);
+    toast.success('Colección creada.');
   };
 
   const updateCollection = () => {
@@ -120,15 +125,24 @@ export default function CollectionsPage() {
     saveCollections(updated);
     resetForm();
     setEditingCollection(null);
+    toast.success('Cambios guardados.');
   };
 
-  const deleteCollection = (id: string) => {
-    if (confirm('¿Eliminar esta colección?')) {
-      saveCollections(collections.filter((c) => c.id !== id));
-      if (selectedCollection?.id === id) {
-        setSelectedCollection(null);
-      }
+  const deleteCollection = async (id: string) => {
+    const collection = collections.find((c) => c.id === id);
+    const confirmed = await confirm({
+      title: `¿Eliminar "${collection?.name ?? 'esta colección'}"?`,
+      message: 'Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      tone: 'danger',
+    });
+    if (!confirmed) return;
+
+    saveCollections(collections.filter((c) => c.id !== id));
+    if (selectedCollection?.id === id) {
+      setSelectedCollection(null);
     }
+    toast.success('Colección eliminada.');
   };
 
   const resetForm = () => {

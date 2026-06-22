@@ -11,6 +11,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useToast } from '@/components/ui/Toast';
 
 interface BatchResult {
   index: number;
@@ -20,6 +21,7 @@ interface BatchResult {
 }
 
 export default function BatchGeneratorPage() {
+  const { toast } = useToast();
   const [customPrompts, setCustomPrompts] = useState('');
   const [batchLoading, setBatchLoading] = useState(false);
   const [batchResults, setBatchResults] = useState<BatchResult[]>([]);
@@ -29,7 +31,7 @@ export default function BatchGeneratorPage() {
 
     const prompts = customPrompts.split('\n').filter(p => p.trim());
     if (prompts.length === 0) {
-      alert('Por favor escribe al menos un prompt');
+      toast.info('Escribe al menos un prompt, uno por línea.');
       return;
     }
 
@@ -84,7 +86,7 @@ export default function BatchGeneratorPage() {
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error descargando imagen:', error);
-      alert('Error al descargar la imagen');
+      toast.error('No se pudo descargar la imagen. Inténtalo de nuevo.');
     }
   };
 
