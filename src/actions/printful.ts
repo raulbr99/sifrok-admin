@@ -63,7 +63,9 @@ export async function createPrintfulOrderFromStripe(stripeSessionId: string) {
   }
 
   if (printfulItems.length === 0) {
-    throw new Error('No hay items con variante de Printful sincronizada para enviar')
+    const msg = 'No hay items con variante de Printful sincronizada para enviar'
+    await prisma.order.update({ where: { id: order.id }, data: { fulfillmentError: msg } }).catch(() => {})
+    throw new Error(msg)
   }
 
   // Destinatario (forma Printful: name / address1 / zip / country_code).
@@ -89,6 +91,7 @@ export async function createPrintfulOrderFromStripe(stripeSessionId: string) {
         printfulOrderId: String(result.id),
         printfulStatus: result.status || 'draft',
         status: 'PROCESSING',
+        fulfillmentError: null,
       },
     })
 
@@ -120,7 +123,42 @@ export async function createPrintfulOrderFromStripe(stripeSessionId: string) {
       },
     })
 
+    await prisma.order
+      .update({
+        where: { id: order.id },
+        data: { fulfillmentError: String(error.message || 'Error desconocido').slice(0, 500) },
+      })
+      .catch(() => {})
+
     throw new Error(`Error al crear orden en Printful: ${error.message}`)
+  }
+}
+
+/**
+ * Reintentar el envío a Printful de una orden que falló (admin).
+ * Reutiliza createPrintfulOrderFromStripe; este escribe/limpia fulfillmentError.
+ */
+export async function retryPrintfulFulfillment(
+  orderId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const session = await auth()
+  if (!session || session.user?.role !== 'admin') {
+    throw new Error('No autorizado')
+  }
+
+  const order = await prisma.order.findUnique({ where: { id: orderId } })
+  if (!order) throw new Error('Orden no encontrada')
+  if (order.printfulOrderId) {
+    return { success: false, error: 'La orden ya fue enviada a Printful.' }
+  }
+
+  try {
+    await createPrintfulOrderFromStripe(order.stripeSessionId)
+    revalidatePath('/admin/orders')
+    return { success: true }
+  } catch (error: any) {
+    revalidatePath('/admin/orders')
+    return { success: false, error: error.message }
   }
 }
 

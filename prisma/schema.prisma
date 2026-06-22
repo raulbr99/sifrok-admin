@@ -124,6 +124,8 @@ model Order {
   stripeFee         Float?      // Comision Stripe (2.9% + 0.30)
   netProfit         Float?      // Profit neto calculado
 
+  fulfillmentError  String?  @db.Text  // último error al enviar a Printful (null = ok / sin intento)
+
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   orderItems OrderItem[]
 }

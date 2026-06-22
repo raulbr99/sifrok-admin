@@ -25,7 +25,7 @@ import {
 } from 'lucide-react'
 import { getOrders, calculateOrderProfit } from '@/actions/orders'
 import { processRefund } from '@/actions/stripe'
-import { syncPrintfulOrderStatus } from '@/actions/printful'
+import { syncPrintfulOrderStatus, retryPrintfulFulfillment } from '@/actions/printful'
 import { useToast } from '@/components/ui/Toast'
 import { useConfirm } from '@/components/ui/ConfirmDialog'
 import Button from '@/components/ui/Button'
@@ -50,6 +50,7 @@ interface Order {
   productionCost: number | null
   stripeFee: number | null
   netProfit: number | null
+  fulfillmentError: string | null
   createdAt: Date
   user: { name: string | null; email: string }
   orderItems: Array<{
@@ -153,6 +154,23 @@ export default function OrdersPage() {
     }
   }
 
+  async function handleRetryFulfillment(orderId: string) {
+    setProcessingId(orderId)
+    try {
+      const res = await retryPrintfulFulfillment(orderId)
+      if (res.success) {
+        toast.success('Orden enviada a Printful.')
+      } else {
+        toast.error(res.error || 'No se pudo enviar a Printful.')
+      }
+      loadOrders()
+    } catch (error: any) {
+      toast.error('No se pudo reintentar el envío. Inténtalo de nuevo.')
+    } finally {
+      setProcessingId(null)
+    }
+  }
+
   async function handleCalculateProfit(orderId: string) {
     setProcessingId(orderId)
     try {
@@ -217,9 +235,23 @@ export default function OrdersPage() {
         header: 'Estado Printful',
         cell: ({ row }) => (
           <div className="flex flex-col items-start gap-1">
-            <Badge tone={printfulStatusTones[row.original.printfulStatus || ''] || 'neutral'}>
-              {row.original.printfulStatus || 'No enviado'}
-            </Badge>
+            {row.original.printfulOrderId ? (
+              <Badge tone={printfulStatusTones[row.original.printfulStatus || ''] || 'neutral'}>
+                {row.original.printfulStatus || 'enviado'}
+              </Badge>
+            ) : row.original.status === 'CANCELLED' ? (
+              <Badge tone="neutral">No enviado</Badge>
+            ) : (
+              <Badge tone="warning">Sin fulfillment</Badge>
+            )}
+            {!row.original.printfulOrderId && row.original.fulfillmentError && (
+              <span
+                className="max-w-[14rem] truncate text-xs text-danger"
+                title={row.original.fulfillmentError}
+              >
+                {row.original.fulfillmentError}
+              </span>
+            )}
             {row.original.trackingNumber && (
               <span className="text-xs text-ink-muted">
                 {row.original.carrier ? `${row.original.carrier}: ` : ''}
@@ -322,6 +354,19 @@ export default function OrdersPage() {
                 aria-label="Sincronizar Printful"
               >
                 <Truck className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            )}
+            {!row.original.printfulOrderId && row.original.status !== 'CANCELLED' && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleRetryFulfillment(row.original.id)}
+                disabled={processingId === row.original.id}
+                className="p-2 text-ink-muted hover:text-accent"
+                title="Reintentar envío a Printful"
+                aria-label="Reintentar envío a Printful"
+              >
+                <RefreshCw className="w-4 h-4" aria-hidden="true" />
               </Button>
             )}
             {row.original.status !== 'CANCELLED' && row.original.stripePaymentId && (
